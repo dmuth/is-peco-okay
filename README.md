@@ -1,4 +1,4 @@
-# PECO Outage Stats
+# PECO Outage Status
 
 Just a little shell script that I whipped up to pull down the current outage stats from PECO.
 
