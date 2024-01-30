@@ -1,0 +1,124 @@
+org: dmuth
+app: peco
+service: peco-api
+frameworkVersion: '3'
+
+provider:
+  name: aws
+
+  # This is a faster method, and will be the default in Serverless 4
+  deploymentMethod: direct
+
+  runtime: python3.10
+
+  # Don't keep old versions of functions.
+  versionFunctions: false
+
+  # Cloudwatch log retention for 30 days
+  logRetentionInDays: 30
+
+  environment:
+    STAGE: ${sls:stage}
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.dynamoTableName}" 
+
+
+functions:
+
+  test:
+    handler: testing.main
+    #url: true
+    #events:
+    #  - httpApi:
+    #      path: /test
+    #      method: get
+
+  #
+  # This function fetches the latest PECO statuses from DynamoDB.
+  #
+  peco:
+    handler: peco.get_peco_status
+    events:
+      - httpApi:
+          path: /peco
+          method: get
+
+  #
+  # This function fetches PECO's status periodically and writes it to 
+  # a DynamoDB table.
+  #
+  cron:
+    handler: cron.main
+    events:
+      - schedule: 
+          rate: rate(5 minutes)
+          enabled: true
+      #- httpApi: # Debugging
+      #    path: /cron
+      #    method: get
+
+
+#
+# Our resources are in CloudFormation syntax
+#
+resources:
+
+  Resources:
+    pecoOutagesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.dynamoTableName}
+
+        # Set to on-demand capacity mode
+        BillingMode: PAY_PER_REQUEST  
+
+        # Prevent accidental deletion
+        DeletionProtectionEnabled: true
+
+        #
+        # Set up our attribute definitions for the Partition Key and Sort Key.
+        #
+        AttributeDefinitions:
+          - AttributeName: Date
+            AttributeType: S
+          - AttributeName: DateTime
+            AttributeType: S
+        KeySchema:
+          - AttributeName: Date
+            KeyType: HASH
+          - AttributeName: DateTime
+            KeyType: RANGE
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true
+
+
+plugins:
+  - serverless-offline
+  - serverless-python-requirements
+  # https://www.serverless.com/plugins/serverless-finch
+  - serverless-finch
+
+
+custom:
+
+  stage: "${sls:stage}"
+  dynamoTableName: "peco-outages-${sls:stage}"
+
+  serverless-offline:
+    httpPort: 3333
+
+  # Deploy static assets with "sls client deploy"
+  client:
+    bucketName: dmuth-test-serverless-${sls:stage}
+    distributionFolder: assets
+ 
+

@@ -1,0 +1,5 @@
+requests==2.31.0
+#
+# This is due to a breaking change in Urllib3 version 2 that breaks Boto3.
+#
+urllib3<2
