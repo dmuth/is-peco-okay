@@ -1,78 +1,27 @@
-<!--
-title: 'AWS Simple HTTP Endpoint example in Python'
-description: 'This template demonstrates how to make a simple HTTP API with Python running on AWS Lambda and API Gateway using the Serverless Framework.'
-layout: Doc
-framework: v3
-platform: AWS
-language: python
-authorLink: 'https://github.com/serverless'
-authorName: 'Serverless, inc.'
-authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4'
--->
 
-# Serverless Framework Python HTTP API on AWS
+# PECO API Endpoint
 
-This template demonstrates how to make a simple HTTP API with Python running on AWS Lambda and API Gateway using the Serverless Framework.
+## Development
 
-This template does not include any kind of persistence (database). For more advanced examples, check out the [serverless/examples repository](https://github.com/serverless/examples/)  which includes DynamoDB, Mongo, Fauna and other examples.
+### Setup
 
-## Usage
+- `serverless plugin install -n serverless-python-requirements` - Installs a module which will pull Python dependencies from `requirements.txt` for deployment.
+- `serverless plugin install -n serverless-offline` - Installs the offline plugin which emulates AWS Lambda and API gateway to further speed up development
 
-### Deployment
 
-```
-$ serverless deploy
-```
+### Actual Development
 
-After deploying, you should see output similar to:
+- `sls invoke local -f hello` - Run your function locally and print results to stdout.
+- `sls offline` - Run a webserver
 
-```bash
-Deploying aws-python-http-api-project to stage dev (us-east-1)
 
-✔ Service deployed to stack aws-python-http-api-project-dev (140s)
+## Deployment
 
-endpoint: GET - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/
-functions:
-  hello: aws-python-http-api-project-dev-hello (2.3 kB)
-```
+- `sls deploy` - Deploy your Serverless app to Lambda, and print out an API endpoint
+- `sls info` - Print info on your deployment
+- `curl https://xxxxxxx.execute-api.us-east-1.amazonaws.com/` - Query your endpoint
 
-_Note_: In current form, after deployment, your API is public and can be invoked by anyone. For production deployments, you might want to configure an authorizer. For details on how to do that, refer to [http event docs](https://www.serverless.com/framework/docs/providers/aws/events/apigateway/).
 
-### Invocation
-
-After successful deployment, you can call the created application via HTTP:
-
-```bash
-curl https://xxxxxxx.execute-api.us-east-1.amazonaws.com/
-```
-
-Which should result in response similar to the following (removed `input` content for brevity):
-
-```json
-{
-  "message": "Go Serverless v3.0! Your function executed successfully!",
-  "input": {
-    ...
-  }
-}
-```
-
-### Local development
-
-You can invoke your function locally by using the following command:
-
-```bash
-serverless invoke local --function hello
-```
-
-Which should result in response similar to the following:
-
-```
-{
-  "statusCode": 200,
-  "body": "{\n  \"message\": \"Go Serverless v3.0! Your function executed successfully!\",\n  \"input\": \"\"\n}"
-}
-```
 
 Alternatively, it is also possible to emulate API Gateway and Lambda locally by using `serverless-offline` plugin. In order to do that, execute the following command:
 

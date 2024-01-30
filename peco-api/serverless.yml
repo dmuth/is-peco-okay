@@ -12,3 +12,10 @@ functions:
       - httpApi:
           path: /
           method: get
+
+plugins:
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 3333
