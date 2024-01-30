@@ -6,6 +6,7 @@ provider:
   runtime: python3.9
 
 functions:
+
   hello:
     handler: handler.hello
     events:
@@ -13,9 +14,18 @@ functions:
           path: /
           method: get
 
+  peco:
+    handler: handler.get_peco_status
+    events:
+      - httpApi:
+          path: /peco
+          method: get
+
 plugins:
   - serverless-offline
+  - serverless-python-requirements
 
 custom:
   serverless-offline:
     httpPort: 3333
+

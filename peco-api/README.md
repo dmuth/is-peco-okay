@@ -12,7 +12,7 @@
 ### Actual Development
 
 - `sls invoke local -f hello` - Run your function locally and print results to stdout.
-- `sls offline` - Run a webserver
+- `sls offline --reloadHandler` - Run a webserver.  Endpoints will be printed out.  Python files will be hot-reloaded.
 
 
 ## Deployment
@@ -20,6 +20,34 @@
 - `sls deploy` - Deploy your Serverless app to Lambda, and print out an API endpoint
 - `sls info` - Print info on your deployment
 - `curl https://xxxxxxx.execute-api.us-east-1.amazonaws.com/` - Query your endpoint
+
+
+## Troubleshooting
+
+### Modules from requirements.txt aren't being loaded on AWS!
+
+Make sure you have the following in `serverless.yml`:
+
+```
+plugins:
+  - serverless-python-requirements
+```
+
+Also, if you're on a Mac, you may run into issues with cross-compiling.  In that case, you'll need to use a `virtualenv` while using Serverless.
+  - `brew install pipx`
+  - `pipx install virtualenv`
+  - `./bin/activate` - Activate your VirtualEnv
+  - `deactivate` - Deactivate your VirtualEnv
+
+
+
+
+
+
+
+
+
+
 
 
 
