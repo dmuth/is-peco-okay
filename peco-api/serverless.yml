@@ -1,3 +1,5 @@
+org: dmuth
+app: peco
 service: peco-api
 frameworkVersion: '3'
 
