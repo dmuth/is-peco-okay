@@ -2,7 +2,7 @@
 
 Just a little shell script that I whipped up to pull down the current outage stats from PECO.
 
-It's the same endpoint that their [Official Outage Map](https://www.peco.com/outages/experiencing-an-outage/outage-map) uses.
+It's the same endpoint that their [Official Outage Map](https://secure.peco.com/FaceBook/Pages/outagemap.aspx) uses.
 
 This script can be executed with the following `bash` command:
 
