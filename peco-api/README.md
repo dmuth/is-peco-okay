@@ -20,6 +20,7 @@
 - `sls deploy` - Deploy your Serverless app to Lambda, and print out an API endpoint
   - Deploy just a function with: `sls deploy -f peco`
     - Note that a successful deploy can show a red checkmark (✔), which is confusing but legit.
+  - Deploy to prod with `sls deploy --stage prod`.
 - `sls info` - Print info on your deployment
 - `curl https://xxxxxxx.execute-api.us-east-1.amazonaws.com/` - Query your endpoint
 - Debugging
