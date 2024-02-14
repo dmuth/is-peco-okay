@@ -5,12 +5,18 @@ frameworkVersion: '3'
 
 provider:
   name: aws
+  # This is a faster method, and will be the default in Serverless 4
+  deploymentMethod: direct
   runtime: python3.9
+  # Don't keep old versions of functions.
+  versionFunctions: false
+
 
 functions:
 
   hello:
     handler: handler.hello
+    #url: true
     events:
       - httpApi:
           path: /
@@ -18,6 +24,7 @@ functions:
 
   peco:
     handler: handler.get_peco_status
+    #url: true
     events:
       - httpApi:
           path: /peco
