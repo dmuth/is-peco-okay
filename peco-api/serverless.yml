@@ -15,7 +15,7 @@ provider:
 functions:
 
   hello:
-    handler: handler.hello
+    handler: peco.hello
     #url: true
     events:
       - httpApi:
@@ -23,7 +23,7 @@ functions:
           method: get
 
   peco:
-    handler: handler.get_peco_status
+    handler: peco.get_peco_status
     #url: true
     events:
       - httpApi:
