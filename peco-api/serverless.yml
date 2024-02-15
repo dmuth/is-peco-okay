@@ -30,8 +30,12 @@ functions:
           path: /peco
           method: get
 
-#  cron:
-#    handler: cron.main
+  cron:
+    handler: cron.main
+    events:
+      - schedule: 
+          rate: rate(1 minute)
+          enabled: true
 
 plugins:
   - serverless-offline
