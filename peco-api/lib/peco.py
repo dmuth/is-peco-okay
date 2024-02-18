@@ -1,45 +1,13 @@
+#
+# Module for interacting with PECO's API.
+#
 
-from datetime import datetime, timedelta
-import os
-
-import boto3
 import requests
-
-
-#
-# Return an object for the DynamoDB Table
-#
-def get_dynamodb_table():
-
-    env = os.environ["STAGE"]
-    table_name = f"peco-outages-{env}"
-
-    dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table(table_name)
-
-    return(table)
-
-
-#
-# Get relevant dates all at once.
-#
-def get_dates():
-
-    retval = {}
-
-    retval["date"] = datetime.now().strftime('%Y-%m-%d')
-    retval["datetime"] = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-    yesterday = datetime.now() - timedelta(days=1)
-    retval["yesterday"] = yesterday.strftime('%Y-%m-%d')
-
-    return(retval)
-
-
 
 #
 # Download stats from PECO's API.
 #
-def get_peco_stats():
+def get_stats():
 
     #
     # Grab the "interval_generation_data" field, which contains a URL fragment.
@@ -73,32 +41,5 @@ def get_peco_stats():
 
     return(response, url_2)
 
-
-#
-# Put an item in the DynamoDB table
-#
-def put_item(table, data):
-    retval = table.put_item(Item = data)
-    return(retval)
-
-
-#
-# Retrieve all items that match the supplied key.
-# Items will be returned in reverse order.
-#
-def get_items(table, key, value, limit = 100):
-
-    retval = {}
-
-    items = table.query(
-        KeyConditionExpression = boto3.dynamodb.conditions.Key(key).eq(value),
-        ScanIndexForward = False,
-        Limit = limit
-        )
-
-    if "Items" in items:
-        retval = items["Items"]
-
-    return(retval)
 
 
