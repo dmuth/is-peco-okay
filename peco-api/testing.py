@@ -5,7 +5,8 @@ import os
 import requests
 import boto3
 
-import lib
+import lib.db as db
+import lib.peco as peco
 
 
 #
@@ -37,15 +38,15 @@ def main(event, context):
         "input": event,
     }
 
-    table = lib.get_dynamodb_table()
-    dates = lib.get_dates()
+    table = db.get_table()
+    dates = db.get_dates()
 
     data = {
         "Date": dates["date"],
         "DateTime": dates["datetime"],
         }
 
-    items = lib.get_items(table, "Date", data["Date"], limit = 6)
+    items = db.get_items(table, "Date", data["Date"], limit = 6)
     #print(items)
     print(f"NUM ITEMS: {len(items)}")
     print(items[0])

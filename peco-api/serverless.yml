@@ -46,11 +46,32 @@ functions:
   # This function fetches the latest PECO statuses from DynamoDB.
   #
   peco:
-    handler: peco.get_peco_status
+    handler: peco.get_status
     events:
       - httpApi:
           path: /peco
           method: get
+
+  #
+  # Get recent status.  At this time, the default is 12 (1 hour).
+  #
+  peco_recent:
+    handler: peco.get_status_recent
+    events:
+      - httpApi: 
+          path: /peco/recent
+          method: get
+
+  #
+  # Live status from PECO (for testing/development purposes)
+  #
+  peco_live:
+    handler: peco.get_status_live
+    #events: # Debugging
+    #  - httpApi: 
+    #      path: /peco/live
+    #      method: get
+
 
   #
   # This function fetches PECO's status periodically and writes it to 
