@@ -100,6 +100,18 @@ def get_items_recent(table, dates, limit = 1):
         }
 
     retval = get_items(table, "Date", data["Date"], limit = limit)
+    #retval = retval[:9] # Debugging - force an incomplete fetch for today
+
+    #
+    # If we didn't fetch enough items, we're probably at the start of the day.
+    # Try fetching more items from yesterday.
+    #
+    if len(retval) < limit:
+        new_limit = limit - len(retval)
+        data["Date"] = dates["yesterday"]
+        #print(f"DEBUG: Only fetched {len(retval)} items, fetching {new_limit} more from yesterday ({data['Date']})")
+        retval += get_items(table, "Date", data["Date"], limit = new_limit)
+
     for row in retval:
         humanized_sorted = {}
         for key in sorted(row["humanized"], key = sort_humanized_dict):
@@ -107,6 +119,5 @@ def get_items_recent(table, dates, limit = 1):
         row["humanized"] = humanized_sorted
 
     return(retval)
-
 
 

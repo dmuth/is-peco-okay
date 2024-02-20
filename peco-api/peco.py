@@ -95,10 +95,9 @@ def _get_unique_rows(items):
         last = row["humanized"]["datetime"]
 
 
-    # TEST
-    #print("TEST", stats[0])
-    #print("TEST", stats)
-    #print("TEST LEN", len(stats))
+    #print("DEBUG", stats[0])
+    #print("DEBUG", stats)
+    #print("DEBUG LEN", len(stats))
     #stats = []
 
     return(stats)
