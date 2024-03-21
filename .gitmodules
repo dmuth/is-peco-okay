@@ -1,0 +1,3 @@
+[submodule "peco-api/assets/quickstart/themes/ananke"]
+	path = peco-api/assets/quickstart/themes/ananke
+	url = https://github.com/theNewDynamic/gohugo-theme-ananke.git

@@ -1,0 +1,64 @@
+body {
+  width: 800px;
+  margin: 0 auto;
+  font-family: sans-serif;
+}
+
+nav ul {
+  list-style: none;
+  padding: 3px 5px;
+  background: #111;
+
+  a {
+    color: #fff;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  li {
+    display: inline;
+  }
+}
+
+footer {
+  background: #f2f2f2;
+  padding: 2px 2px;
+  font-size: .7em;
+  text-align: center;
+}
+
+#map {
+  height: 300px;
+}
+
+.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.display-none {
+    display: none;
+}
+
+.visible {
+    visibility: visible;
+}
+
+.error {
+    color: red;
+    margin: 1em 1em 1em 1em;
+}
+
+.peco-label, .peco-value {
+    // Display the elements as inline blocks.
+    display: inline-block;
+}
+
+.peco-value {
+    margin-left: 0em;
+}
+
+

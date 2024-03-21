@@ -1,0 +1,12 @@
+{{ define "main" }}
+
+<p>{{ i18n "taxonomyPageList" . }}</p>
+
+{{ range  .Pages }}
+    <div class="relative w-100  mb4 bg-white">
+        {{ .Render "summary" }}
+    </div>
+{{ end }}
+
+{{ end }}
+

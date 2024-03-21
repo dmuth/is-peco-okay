@@ -20,16 +20,21 @@ provider:
   environment:
     STAGE: ${sls:stage}
 
-  iamRoleStatements:
-    - Effect: "Allow"
-      Action:
-        - dynamodb:Query
-        - dynamodb:Scan
-        - dynamodb:GetItem
-        - dynamodb:PutItem
-        - dynamodb:UpdateItem
-        - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.dynamoTableName}" 
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.dynamoTableName}" 
+
+  httpApi:
+    cors: true
 
 
 functions:
