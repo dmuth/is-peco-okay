@@ -1,3 +1,7 @@
+
+*~
+*.swp
+
 # Distribution / packaging
 .Python
 env/
