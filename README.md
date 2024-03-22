@@ -1,12 +1,14 @@
 # PECO Outage Status
 
+## CLI Version
+
 Just a little shell script that I whipped up to pull down the current outage stats from PECO.
 
 It's the same endpoint that their [Official Outage Map](https://secure.peco.com/FaceBook/Pages/outagemap.aspx) uses.
 
 This script can be executed with the following `bash` command:
 
-`bash -c "$(curl -s https://raw.githubusercontent.com/dmuth/peco-outage-status/main/get-peco-outage-status.sh)"`
+`bash -c "$(curl -s https://raw.githubusercontent.com/dmuth/peco-outage-status/main/bin/get-peco-outage-status.sh)"`
 
 ...and it will return data in this format:
 
@@ -35,5 +37,10 @@ This script can be executed with the following `bash` command:
 I wrote this during [a pretty nasty storm that blew through the area recently](https://www.nbcphiladelphia.com/weather/powerful-storm-expected-to-hit-philly-on-tuesday/3738811/)
 as I wanted to get an idea for how many power outages there were without obsessively reloading the page.
 
+
+## Web Version
+
+...coming soon. :-)  I'm teaching myself [Hugo](https://gohugo.io/) and building a front end
+around some web services that I am building.  I will update this README as more work is done.
 
 
