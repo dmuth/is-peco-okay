@@ -11,7 +11,7 @@
 
 ### Actual Development
 
-- `sls invoke local -f hello` - Run your function locally and print results to stdout.
+- `sls invoke local -f peco` - Run your function locally and print results to stdout.
 - `sls offline --reloadHandler` - Run a webserver.  Endpoints will be printed out.  Python files will be hot-reloaded.
 
 

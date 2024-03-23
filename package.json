@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "serverless-finch": "^4.0.3",
+    "serverless-plugin-resource-tagging": "^1.2.0",
     "serverless-s3-sync": "^3.3.0"
   }
 }

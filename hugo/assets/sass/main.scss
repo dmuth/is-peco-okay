@@ -1,39 +1,83 @@
+
+$font-stack: Arial, sans-serif;
+$font-size: 16px;
+$font-size-mobile: 14px;
+$width-mobile: 1024px;
+
 body {
-  width: 800px;
-  margin: 0 auto;
-  font-family: sans-serif;
+    font-family: $font-stack;
+    font-size: $font-size;
+    width: 75%;
+    /* auto should apply to left and right margin, centering the body. */
+    margin: 10px auto;
+}
+
+/**
+* Font sizing.  "em" means it relates to the font-size of the parent element.
+* So whatever is set for the body element should propagate down, so long as
+* we use relative sizes.
+*/
+h1 {
+    font-size: 2em;
+}
+
+h2 {
+    font-size: 1.5em;
+}
+
+p {
+    font-size: 1em;
+}
+
+
+@media (max-width: $width-mobile) {
+    /* Adjust font sizes for smaller screens */
+    body {
+        font-size: $font-size-mobile;
+        margin: 10px;
+        width: 100%;
+    }
 }
 
 nav ul {
-  list-style: none;
-  padding: 3px 5px;
-  background: #111;
 
-  a {
-    color: #fff;
-    text-decoration: none;
+    list-style: none;
+    padding: 10px;
+    background: #111;
 
-    &:hover {
-      text-decoration: underline;
+    a {
+        color: #fff;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
     }
-  }
 
-  li {
-    display: inline;
-  }
+    li {
+        display: inline;
+        &:hover {
+            background-color: #888888;
+        }
+
+        margin: 10px;
+        padding: 10px;
+
+    }
+
+}
+
+.peco-status-recent-line {
+    font-size: 1em;
 }
 
 footer {
-  background: #f2f2f2;
   padding: 2px 2px;
   font-size: .7em;
   text-align: center;
 }
 
-#map {
-  height: 300px;
-}
-
+/* Utility classes. */
 .hidden {
     opacity: 0;
     visibility: hidden;
@@ -52,13 +96,77 @@ footer {
     margin: 1em 1em 1em 1em;
 }
 
-.peco-label, .peco-value {
-    // Display the elements as inline blocks.
+/* Distribute our items evenly with space inbetween. */
+.peco-rows {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between; 
+}
+
+/* Settings for each row, which contains a label and a value. */ 
+.peco-row {
     display: inline-block;
+    /* Border for debugging. 
+    border: 1px solid black;
+    */
+    background-color: #eeeeee;
+    padding: 10px;
+    margin-bottom: 10px; 
+}
+
+.peco-row-yellow {
+    background-color: #ffffcc;
+}
+
+.peco-row-red {
+    background-color: #ffcccc;
+}
+
+/* Mobile. */
+@media only screen and (max-width: $width-mobile) {
+    .peco-row {
+        width: calc(90% - 20px);
+        float: left;
+    }
+}
+
+/* Regular screen. */
+@media only screen and (min-width: $width-mobile) {
+    .peco-row {
+        width: calc(50% - 30px);
+    }
+}
+
+/* Settings for double-wide rows, mainly for the date. */
+.peco-row-2x-wide {
+}
+
+/* Mobile. */
+@media only screen and (max-width: $width-mobile) {
+    .peco-row-2x-wide {
+        width: calc(90% - 20px);
+    }
+}
+
+/* Regular screen. */
+@media only screen and (min-width: $width-mobile) {
+    .peco-row-2x-wide {
+        width: calc(100% - 20px);
+    }
+}
+
+.peco-label {
+    font-size: 1.5em;
 }
 
 .peco-value {
-    margin-left: 0em;
+    font-size: 2em;
+    margin-top: .25em;
 }
 
+.peco-value-datetime-time, 
+    .peco-value-datetime-date {
+    font-size: 1.5em;
+    margin-top: .25em;
+}
 

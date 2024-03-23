@@ -33,6 +33,9 @@ provider:
             - dynamodb:DeleteItem
           Resource: "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.dynamoTableName}" 
 
+  stackTags:
+    project: "peco"
+
   httpApi:
     cors: true
 
@@ -132,6 +135,8 @@ plugins:
   - serverless-python-requirements
   # https://www.serverless.com/plugins/serverless-finch
   - serverless-finch
+  # https://www.serverless.com/plugins/serverless-plugin-resource-tagging
+  - serverless-plugin-resource-tagging
 
 
 custom:
