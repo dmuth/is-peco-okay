@@ -1,8 +1,0 @@
-{{ define "header" }}{{ partial "page-header.html" . }}{{ end }}
-{{ define "main" }}
-  <div class="flex-l mt2 mw8 center">
-      <div class="nested-copy-line-height lh-copy f4 nested-links {{ $.Param "text_color" | default "mid-gray" }}">
-        {{ .Content }}
-      </div>
-  </div>
-{{ end }}

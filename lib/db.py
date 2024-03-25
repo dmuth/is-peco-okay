@@ -59,6 +59,7 @@ def get_items(table, key, value, limit = 100):
 
     items = table.query(
         KeyConditionExpression = boto3.dynamodb.conditions.Key(key).eq(value),
+        ConsistentRead = False,
         ScanIndexForward = False,
         Limit = limit
         )
