@@ -40,7 +40,7 @@ static site generator.
 
 The back end consists of AWS Lambda to provide API endpoints, with the underlying code being
 written in Python.  The HTML is stored in an S3 bucket and served by via CloudFront which performs
-SSL termination.
+SSL termination.  The data is stored in DynamoDB.
 
 
 ## Did you really hand code all of the Javascript and CSS?
@@ -54,6 +54,15 @@ without using either a Javascript or CSS framework, and I really wanted to craft
 Javascript and CSS.  So I did.
 
 
+## If everything is hand-coded, why did you use Chart.js for the graph?
+
+Because if I wanted to mess with individual pixels I'd go back to the 3rd Grade, write some 
+[Logo](https://en.wikipedia.org/wiki/Logo_(programming_language)), and then have chocolate milk 
+at lunch while eating hamburger hash with a spork.
+
+...or you could just let me use Chart.js like an adult.
+
+
 ## Is the source code available?
 
 Yep!  You can get the source at [https://github.com/dmuth/peco-outage-status](https://github.com/dmuth/peco-outage-status).
@@ -63,7 +72,8 @@ Yep!  You can get the source at [https://github.com/dmuth/peco-outage-status](ht
 
 Yep!  I've built a few things you may find interesting:
 
-- [Diceware Password Generator](https://diceware.dmuth.org/)
+- [Diceware Password Generator](https://diceware.dmuth.org/) - Passphrase generator using the "diceware" method.
+- [Dead Simple QR Code Generator](https://httpbin.dmuth.org/qrcode/) - No ads, signups, or spam. Just QR Codes when you want them.
 - [FastAPI Httpbin](https://httpbin.dmuth.org/) - HTTP endpoints for testing.  Built with FastAPI.
 - [Is SEPTA F\*cked?](https://www.isseptafucked.com/) - Like this site.  But for SEPTA. With 100% more profanity.
 - [SEPTA Stats](https://septastats.com/) - Stats on Philadelphia Public Transit with 100% less profanity.

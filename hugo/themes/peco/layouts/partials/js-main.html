@@ -1,4 +1,31 @@
 {{/* Load our Javascript for the main page. */}}
-{{ $js := resources.Get "js/main.js" }}
-{{ $jsMin := $js | resources.Minify }}
-<script src="{{ $jsMin.RelPermalink }}"></script>
+
+{{ $js_main := resources.Get "js/main.js" }}
+{{ $js_current := resources.Get "js/main-current.js" }}
+{{ $js_recent := resources.Get "js/main-recent.js" }}
+
+{{/*
+    What's going on here is that resources.Concat caches output based on the filename.
+    Problem is, this completely breaks development for me, because if I change the
+    contents of a Javascript file, the final file won't be rebuilt unless I restart Hugo server.
+    I spent about 45 minutes Googling around, and couldn't find anything that actually worked.
+    So in a fit of frustration, I'm just going to set the filename to something dynamic, so
+    that every time a Javascript is updated, Hugo will rebuild things (as it should), get a new
+    time, and write a new file.
+
+    This is SO annoying, but if there is a better method, I haven't found it yet.
+
+*/}}
+
+{{/* Make our hash and then only grab the first 6 chars so that the final 
+    filename isn't obscenely long. */}}
+{{ $timehash := time.Now.Unix | sha1 }}
+{{ $timehash := substr $timehash 0 6 }}
+
+{{ $filename := printf "js/%s.js" $timehash }}
+
+{{ $scripts := slice $js_main $js_current $js_recent | resources.Concat $filename | minify | fingerprint  }}
+
+<script type="text/javascript" src="{{ $scripts.Permalink }}" integrity="{{ $scripts.Data.Integrity }}" media="screen"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+

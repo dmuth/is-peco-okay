@@ -10,4 +10,3 @@ title: Is PECO Okay?
 ## Recent Statuses
 {{< status-history >}}
 
-More info can be found on the [About Page](/about).

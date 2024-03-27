@@ -41,16 +41,51 @@ def get_status(event, context):
 
 
 #
+# Parse our arguments (only argument supported at this time is num),
+# do a sanity check, and return the value or raise an exception.
+#
+# Note that the number we return is twice what's passed in, since we're taking
+# readings from the API every 5 minutes.
+#
+def parseArgsRecent(event):
+
+    retval = 6
+
+    if not "queryStringParameters" in event:
+        return(retval)
+
+    if not "num" in event["queryStringParameters"]:
+        return(retval)
+
+    num = int(event["queryStringParameters"]["num"])
+
+    error_string = f"Acceptable values are between 1 and 18, inclusive. {num} is out of bounds."
+    if num < 0 or num > 18:
+        raise Exception(error_string)
+
+    retval = num
+    return(retval)
+
+
+#
 # Read the most recent statuses from DynamoDB.
 # Default is 12 statuses (1 hour).
 # This function will dedupe multiple reads for the same timespan.
 #
 def get_status_recent(event, context):
 
+    try:
+        num = parseArgsRecent(event)
+        limit = num * 2
+
+    except Exception as e:
+        response = {"statusCode": 422, "body": str(e)}
+        return(response)
+
     table = db.get_table()
     dates = db.get_dates()
 
-    items = db.get_items_recent(table, dates, limit = 12)
+    items = db.get_items_recent(table, dates, limit = limit)
 
     #print("Debugging", json.dumps(items, indent = 4))
     #print("Debugging", json.dumps(items[0]["humanized"], indent = 4))
@@ -62,6 +97,11 @@ def get_status_recent(event, context):
 
         if type(items[0]) is dict and "humanized" in items[0]:
             stats = _get_unique_rows(items)
+            #
+            # Sometimes we get an extra row, and we want to make sure that the number
+            # of rows we return is exactly what we ask for.
+            #
+            stats = stats[:num]
             response = {"statusCode": 200, "body": json.dumps(stats, indent = 4)}
 
         else:
@@ -71,6 +111,8 @@ def get_status_recent(event, context):
     else:
         print(f"ERROR: Bad repsonse: {items}")
         response = {"statusCode": 500, "body": "Did not find any results from our database query."}
+
+    #print(f"Debug num: {num}, limit: {limit}, num items: {len(items)}, unique_rows: {len(stats)}")
 
     return(response)
 

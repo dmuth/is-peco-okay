@@ -1,8 +1,9 @@
 {{/* This is our layout for the Main index.html page. */}}
+
 {{ define "main" }}
-{{ .Content }}
 
 {{/* Load our Javascript for main. */}}
 {{ partial "js-main.html" . }}
 
+{{ .Content }}
 {{ end }}
