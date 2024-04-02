@@ -67,6 +67,11 @@ nav ul {
 
 }
 
+/* A little padding in our lists. */
+li {
+    padding-bottom: .5em;
+}
+
 .peco-status-recent-line {
     font-size: 1em;
 }
@@ -168,5 +173,23 @@ footer {
     .peco-value-datetime-date {
     font-size: 1.5em;
     margin-top: .25em;
+}
+
+/* Regular screen. */
+@media only screen and (min-width: $width-mobile) {
+    #peco-status-recent-graph-container {
+        position: relative;
+        margin: 10px auto;
+        width: 100%;
+    }
+}
+
+/* Mobile. */
+@media only screen and (max-width: $width-mobile) {
+    #peco-status-recent-graph-container {
+        position: relative;
+        /* No margin here, as "auto" causes the graph to go past the status bars above, and looks weird. */
+        width: 90%;
+    }
 }
 

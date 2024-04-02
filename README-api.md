@@ -12,6 +12,9 @@
 ### Actual Development
 
 - `sls invoke local -f peco` - Run your function locally and print results to stdout.
+- `sls invoke local -f peco_recent` - Run your function locally and print results to stdout.
+- `sls invoke local -f peco_recent --data '{ "queryStringParameters": {"num": 18}}'`
+  - Run the function locally with some query params (e.g. `/peco/recent?num=18`)
 - `sls offline --reloadHandler` - Run a webserver.  Endpoints will be printed out.  Python files will be hot-reloaded.
 
 
