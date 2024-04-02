@@ -1,5 +1,8 @@
 {
   "devDependencies": {
+    "serverless-certificate-creator": "^1.6.0",
+    "serverless-frontend-plugin": "^2.0.2",
+    "serverless-hooks": "^1.0.0",
     "serverless-offline": "^13.3.3",
     "serverless-python-requirements": "^6.0.1"
   },

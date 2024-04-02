@@ -1,6 +1,17 @@
 <nav>
  <ul>
    <li><a href="/">Home</a></li>
-   <li><a href="/about/">About</a></li>
+   <li><a href="/about/index.html">About</a></li>
  </ul>
 </nav>
+
+{{ if eq .Site.Params.Env "dev" }}
+<div class="alert">
+This is the development site.  While it is publicly accessible, please refrain from sharing links to it on social media, as we'd prefer this site <a href="/robots.txt">NOT be indexed by search engines</a>.  Thank you!
+<br/>
+<br/>
+
+At this time, the production site is: <b>OFFLINE</b>
+</div>
+{{ end }}
+

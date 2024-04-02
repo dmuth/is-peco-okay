@@ -7,7 +7,7 @@ async function fetchRecent() {
 
     return new Promise((resolve) => {
 
-    const url = "https://kxdox4xv7g.execute-api.us-east-1.amazonaws.com/peco/recent?num=18";
+    const url = `${window.api_endpoint_base}/peco/recent?num=18`;
 
     fetchWithTimeout(url).then(response => {
         if (!response.ok) {

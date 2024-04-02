@@ -18,17 +18,17 @@ It is an alternative to [PECO's Official Status Page](https://www.peco.com/outag
 ## Why was it built?
 
 I found that when a storm comes through and I lose power, I would obsessively refresh [the
-PECO status page](https://www.peco.com/outages/experiencing-an-outage/outage-map) on my iPhone, 
-to try and get an idea of how many outages they were, and 
-how fast the number of outages was going down so that I had an idea of how fast service 
-restoration was proceeding.
+PECO status page](https://www.peco.com/outages/experiencing-an-outage/outage-map) on my iPhone.
+But here's the thing, I only cared about two numbers:
 
-It certainly... worked.  However, I felt like it was overkill to refresh a page that had a map
-on it, and tons and tons of Javascript and CSS.  When I'm without power, the last thing I want to
-do is use up my phone's battery even faster.  I just wanted numbers, and to see how they improved 
-over time as restoration happened.
+- How many customers are without power?
+- And is that number going up or down?
 
-And here we are.
+That's it.  That's all I need to know.  If the number is going **up**, I know things are getting
+worse and that it might be awhile before I get power back.  If the number is going **down**, I 
+know that restoration is happening, and I can expect power back sonner.
+
+Anything else would just waste my phone's battery.
 
 
 ## What was the site built in?
@@ -39,7 +39,7 @@ The HTML, Javascript, and CSS are managed with [Hugo](https://gohugo.io/), which
 static site generator.
 
 The back end consists of AWS Lambda to provide API endpoints, with the underlying code being
-written in Python.  The HTML is stored in an S3 bucket and served by via CloudFront which performs
+written in Python.  The HTML is stored in an S3 bucket and served by CloudFront which performs
 SSL termination.  The data is stored in DynamoDB.
 
 
@@ -77,8 +77,9 @@ Yep!  I've built a few things you may find interesting:
 - [FastAPI Httpbin](https://httpbin.dmuth.org/) - HTTP endpoints for testing.  Built with FastAPI.
 - [Is SEPTA F\*cked?](https://www.isseptafucked.com/) - Like this site.  But for SEPTA. With 100% more profanity.
 - [SEPTA Stats](https://septastats.com/) - Stats on Philadelphia Public Transit with 100% less profanity.
-- [Splunk Lab](https://github.com/dmuth/splunk-lab) - Stand up a Splunk instance in 30 seconds
-- [Tarsplit](https://github.com/dmuth/tarsplit) - Split a tarball on file boundaries
+- [Splunk Lab](https://github.com/dmuth/splunk-lab) - Stand up a Splunk instance in 30 seconds.
+- [Tarsplit](https://github.com/dmuth/tarsplit) - Split a tarball on file boundaries.
+- [Grafana Network Monitor](https://github.com/dmuth/grafana-network-monitor) - A quick and dirty collection of scripts and dashboards I built to monitor my home's Internet connectivity by pinging multiple hosts on the Internet.
 - ...or just [poke around my GitHub](https://github.com/dmuth)
 
 

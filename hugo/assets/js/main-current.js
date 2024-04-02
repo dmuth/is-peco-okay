@@ -7,7 +7,7 @@ function fetchCurrent() {
 
     return new Promise((resolve) => {
 
-    const url = "https://kxdox4xv7g.execute-api.us-east-1.amazonaws.com/peco";
+    const url = `${window.api_endpoint_base}/peco`;
 
     fetchWithTimeout(url).then(response => {
 
