@@ -1,46 +1,78 @@
-# PECO Outage Status
 
-## CLI Version
+# PECO API Endpoint
 
-Just a little shell script that I whipped up to pull down the current outage stats from PECO.
+## Development
 
-It's the same endpoint that their [Official Outage Map](https://secure.peco.com/FaceBook/Pages/outagemap.aspx) uses.
+### Setup
 
-This script can be executed with the following `bash` command:
+- `serverless plugin install -n serverless-python-requirements` - Installs a module which will pull Python dependencies from `requirements.txt` for deployment.
+- Install any other plugins in the `plugins:` section in `serverless.yml` as-needed.
 
-`bash -c "$(curl -s https://raw.githubusercontent.com/dmuth/peco-outage-status/main/bin/get-peco-outage-status.sh)"`
 
-...and it will return data in this format:
+### Actual Development
+
+- `sls invoke local -f peco` - Run your function locally and print results to stdout.
+- `sls invoke local -f peco_recent` - Run your function locally and print results to stdout.
+- `sls invoke local -f peco_recent --data '{ "queryStringParameters": {"num": 18}}'`
+  - Run the function locally with some query params (e.g. `/peco/recent?num=18`)
+- `sls offline --reloadHandler` - Run a webserver.  Endpoints will be printed out.  Python files will be hot-reloaded.
+
+
+### Working with Web Content
+
+The HTML, Javascript, and CSS is static, and we use [Hugo](https://gohugo.io/) for template processing.
+To launch Hugo for local testing on [http://localhost:1313/](http://localhost:1313/):
+
+- Dev config and endpoints:
+  - `./bin/hugo-server.sh dev`
+- Prod config and endpoints:
+  - `./bin/hugo-server.sh prod`
+- To build the website in `hugo/public/`
+  - `cd hugo`
+  - `hugo --cleanDestinationDir --config hugo-prod.toml`
+
+
+## Deployment
+
+- Code
+  - `sls deploy` - Deploy your Serverless app to Lambda, and print out an API endpoint
+    - Deploy just a function with: `sls deploy -f peco`
+      - Note that a successful deploy can show a red checkmark (✔), which is confusing but legit.
+    - Deploy to prod with `sls deploy --stage prod`.
+- Content
+  - `./bin/deploy-content-dev.sh` - Generates static content, deploys to S3, and invaldates CloudFront cache.
+  - `./bin/deploy-content-prod.sh` - Generates static content, deploys to S3, and invaldates CloudFront cache.
+  - Just Static Content
+    - `sls s3sync` - Sync up just static content to an S3 bucket
+    - `sls s3sync --stage prod` - Deploy to the prod bucket
+- Info
+  - `sls info` - Print info on your deployment
+- Testing
+  - `curl https://xxxxxxx.execute-api.us-east-1.amazonaws.com/` - Query your endpoint
+- Debugging
+  - `sls logs -f peco` - Tail the log for a function.  Note that logs can take 10ish seconds to show up.
+
+
+## Troubleshooting
+
+### Modules from requirements.txt aren't being loaded on AWS!
+
+Make sure you have the following in `serverless.yml`:
 
 ```
-{
-  "date": "2024-01-10T02:23:18.541Z",
-  "outages": [
-    {
-      "summaryTotalId": "total-1",
-      "total_cust_a": {
-        "val": 120405
-      },
-      "total_percent_cust_a": {
-        "val": 7.24
-      },
-      "total_percent_cust_active": {
-        "val": 92.76
-      },
-      "total_cust_s": 1663160,
-      "total_outages": 1399
-    }
-  ]
-}
+plugins:
+  - serverless-python-requirements
 ```
 
-I wrote this during [a pretty nasty storm that blew through the area recently](https://www.nbcphiladelphia.com/weather/powerful-storm-expected-to-hit-philly-on-tuesday/3738811/)
-as I wanted to get an idea for how many power outages there were without obsessively reloading the page.
+Install that plugin with:
+```bash
+serverless plugin install -n serverless-python-requirements
+```
 
-
-## Web Version
-
-...coming soon. :-)  I'm teaching myself [Hugo](https://gohugo.io/) and building a front end
-around some web services that I am building.  I will update this README as more work is done.
+Also, if you're on a Mac, you may run into issues with cross-compiling.  In that case, you'll need to use a `virtualenv` while using Serverless.
+  - `brew install pipx`
+  - `pipx install virtualenv`
+  - `./bin/activate` - Activate your VirtualEnv
+  - `deactivate` - Deactivate your VirtualEnv
 
 

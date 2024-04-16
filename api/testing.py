@@ -1,3 +1,6 @@
+#
+# This endpoint is mostly for testing and screwing around.
+#
 
 import json
 import os
@@ -34,23 +37,27 @@ def main(event, context):
 
     body = {
         "test": "test2",
+        "hostname": os.uname().nodename,
         "message": "Go Serverless v3.0! Your function executed successfully!",
         "input": event,
     }
 
-    table = db.get_table()
-    dates = db.get_dates()
+    #stats, _ = peco.get_stats()
+    #print("DEBUG", stats) # Debugging
 
-    data = {
-        "Date": dates["date"],
-        "DateTime": dates["datetime"],
-        }
+    #table = db.get_table()
+    #dates = db.get_dates()
 
-    items = db.get_items(table, "Date", data["Date"], limit = 6)
+    #data = {
+    #    "Date": dates["date"],
+    #    "DateTime": dates["datetime"],
+    #    }
+
+    #items = db.get_items(table, "Date", data["Date"], limit = 6)
     #print(items)
-    print(f"NUM ITEMS: {len(items)}")
-    print(items[0])
-    print(items[0]["humanized"])
+    #print(f"NUM ITEMS: {len(items)}")
+    #print(items[0])
+    #print(items[0]["humanized"])
     #print(json.dumps(items[0]["humanized"], indent = 2))
 
     #if items:

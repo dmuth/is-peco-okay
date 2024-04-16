@@ -1,5 +1,8 @@
 {{/* Load our Javascript for the main page. */}}
 
+{{/* 
+    First step is grab each of our files 
+*/}}
 {{ $js_main := resources.Get "js/main.js" }}
 {{ $js_current := resources.Get "js/main-current.js" }}
 {{ $js_recent := resources.Get "js/main-recent.js" }}
@@ -17,15 +20,28 @@
 
 */}}
 
-{{/* Make our hash and then only grab the first 6 chars so that the final 
-    filename isn't obscenely long. */}}
+{{/* 
+    Make our hash and then only grab the first 6 chars so that the final 
+    filename isn't obscenely long. 
+*/}}
 {{ $timehash := time.Now.Unix | sha1 }}
 {{ $timehash := substr $timehash 0 6 }}
 
 {{ $filename := printf "js/%s.js" $timehash }}
 
-{{ $scripts := slice $js_main $js_current $js_recent | resources.Concat $filename | minify | fingerprint  }}
+{{/* 
+    Now set $templateData to a dictionary, then process the main Javascript file as a template. 
+*/}}
+{{ $templateData := dict 
+    "apiEndpointBase" .Site.Params.apiEndpointBase 
+    "env" .Site.Params.Env }}
+{{ $js_main_parsed := $js_main | resources.ExecuteAsTemplate $filename $templateData }}
 
-<script type="text/javascript" src="{{ $scripts.Permalink }}" integrity="{{ $scripts.Data.Integrity }}" media="screen"></script>
+{{/* 
+    Finally, concatenate each of those Javascript files into a single file.
+*/}}
+{{ $scripts := slice $js_main_parsed $js_current $js_recent | resources.Concat $filename | minify | fingerprint  }}
+
+<script type="text/javascript" src="{{ $scripts.Permalink }}" integrity="{{ $scripts.Data.Integrity }}" media="screen" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 

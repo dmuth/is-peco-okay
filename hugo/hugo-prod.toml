@@ -1,0 +1,16 @@
+
+baseURL = 'https://www.ispecookay.com/'
+languageCode = 'en-us'
+title = 'Is PECO Okay?'
+theme = 'peco'
+
+enableRobotsTXT = true
+
+
+#
+# Set up our API endpoint for substitution in Javascript.
+#
+[params]
+env = "prod"
+apiEndpointBase = "https://c814t3ny7i.execute-api.us-east-1.amazonaws.com/"
+

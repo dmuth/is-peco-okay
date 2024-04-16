@@ -1,7 +1,8 @@
 
 $font-stack: Arial, sans-serif;
 $font-size: 16px;
-$font-size-mobile: 14px;
+/* Make the font size bigger on mobile, because readability is a concern otherwise. */
+$font-size-mobile: 18px;
 $width-mobile: 1024px;
 
 body {
@@ -29,15 +30,6 @@ p {
     font-size: 1em;
 }
 
-
-@media (max-width: $width-mobile) {
-    /* Adjust font sizes for smaller screens */
-    body {
-        font-size: $font-size-mobile;
-        margin: 10px;
-        width: 100%;
-    }
-}
 
 nav ul {
 
@@ -101,13 +93,6 @@ footer {
     margin: 1em 1em 1em 1em;
 }
 
-/* Distribute our items evenly with space inbetween. */
-.peco-rows {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between; 
-}
-
 /* Settings for each row, which contains a label and a value. */ 
 .peco-row {
     display: inline-block;
@@ -127,37 +112,82 @@ footer {
     background-color: #ffcccc;
 }
 
+/* Alerts */
+.alert {
+    background-color: #ffaaaa;
+    /* Border for debugging. 
+    border: 1px solid black;
+    */
+    border-radius: 5px; 
+    padding: 20px;
+}
+
 /* Mobile. */
-@media only screen and (max-width: $width-mobile) {
+@media (max-width: $width-mobile) {
+
+    body {
+        /* Adjust font sizes for smaller screens */
+        font-size: $font-size-mobile;
+        /* Narrow the width to prevent horizintal scrolling, which is 
+            more common by accident on mobile. */
+        width: 90%;
+    }
+
+    nav ul {
+    }
+
+    /* Alerts */
+    .alert {
+    }
+
     .peco-row {
-        width: calc(90% - 20px);
+        width: calc(100% - 20px);
         float: left;
     }
-}
 
-/* Regular screen. */
-@media only screen and (min-width: $width-mobile) {
-    .peco-row {
-        width: calc(50% - 30px);
-    }
-}
-
-/* Settings for double-wide rows, mainly for the date. */
-.peco-row-2x-wide {
-}
-
-/* Mobile. */
-@media only screen and (max-width: $width-mobile) {
-    .peco-row-2x-wide {
-        width: calc(90% - 20px);
-    }
-}
-
-/* Regular screen. */
-@media only screen and (min-width: $width-mobile) {
+    /* Settings for double-wide rows, mainly for the date. */
     .peco-row-2x-wide {
         width: calc(100% - 20px);
     }
+
+    #peco-status-recent-graph-container {
+        position: relative;
+        /* No margin here, as "auto" causes the graph to go past the status bars above, and looks weird. */
+        width: calc(100% - 20px);
+    }
+
+}
+
+
+/* Regular screen. */
+@media (min-width: $width-mobile) {
+
+    /* Alerts */
+    .alert {
+    }
+
+    /* Distribute our items evenly with space inbetween. */
+    .peco-rows {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between; 
+    }
+
+    .peco-row {
+        width: calc(50% - 30px);
+    }
+
+    /* Settings for double-wide rows, mainly for the date. */
+    .peco-row-2x-wide {
+        width: calc(100% - 20px);
+    }
+
+    #peco-status-recent-graph-container {
+        position: relative;
+        margin: 10px auto;
+        width: 100%;
+    }
+
 }
 
 .peco-label {
@@ -175,21 +205,7 @@ footer {
     margin-top: .25em;
 }
 
-/* Regular screen. */
-@media only screen and (min-width: $width-mobile) {
-    #peco-status-recent-graph-container {
-        position: relative;
-        margin: 10px auto;
-        width: 100%;
-    }
-}
-
-/* Mobile. */
-@media only screen and (max-width: $width-mobile) {
-    #peco-status-recent-graph-container {
-        position: relative;
-        /* No margin here, as "auto" causes the graph to go past the status bars above, and looks weird. */
-        width: 90%;
-    }
+.bottom-padding {
+    height: 50px;
 }
 

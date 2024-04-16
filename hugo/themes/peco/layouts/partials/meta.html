@@ -3,3 +3,34 @@
 <title>{{ print .Page.Title }}</title>
 {{ $style := resources.Get "sass/main.scss" | resources.ToCSS | resources.Minify }}
 <link rel="stylesheet" href="{{ $style.Permalink }}">
+
+{{ $desc := "Is PECO Okay? Check current outage status with this lightweight website!" }}
+
+<meta property="og:locale" content="en_US"/>
+<meta property="og:site_name" content="{{ print .Page.Title }}"/>
+<meta property="og:title" content="{{ print .Page.Title }}"/>
+<meta property="og:url" content="{{ print .Site.BaseURL }}"/>
+<meta property="og:type" content="website"/>
+<meta property="og:description" content="{{ print $desc }}"/>
+<meta property="og:image" content="{{ print .Site.BaseURL }}/img/site.jpg"/>
+<meta property="og:image:url" content="{{ print .Site.BaseURL }}/img/site.jpg"/>
+<meta property="og:image:secure_url" content="{{ print .Site.BaseURL }}/img/site.jpg"/>
+<!-- Google+ / Schema.org -->
+<meta itemprop="name" content="{{ print .Page.Title }}"/>
+<meta itemprop="headline" content="{{ print .Page.Title }}"/>
+<meta itemprop="description" content="{{ print $desc }}"/>
+<meta itemprop="image" content="{{ print .Site.BaseURL }}/img/site.jpg"/>
+
+<!-- Twitter Cards -->
+<meta name="twitter:title" content="{{ print .Page.Title }}"/>
+<meta name="twitter:url" content="{{ print .Site.BaseURL }}"/>
+<meta name="twitter:description" content="{{ print $desc }}"/>
+<meta name="twitter:image" content="{{ print .Site.BaseURL }}/img/site.jpg"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:site" content="@dmuth"/>
+
+<!-- SEO -->
+<link rel="canonical" href="{{ print .Site.BaseURL }}"/>
+<meta name="publisher" content="{{ print .Page.Title }}"/>
+<meta name="description" content="{{ print $desc }}"/>
+

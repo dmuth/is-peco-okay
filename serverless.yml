@@ -1,3 +1,8 @@
+#
+# Note to self: I'm not actually using the Serverless integration on their site,
+# it turns out that streaming logs is super expensive, relatively speaking.
+# I was looking at about $6/mo, which is more than the rest of my AWS bill combined.
+#
 org: dmuth
 app: peco
 service: peco-api
@@ -35,6 +40,7 @@ provider:
 
   stackTags:
     project: "peco"
+    stage: "${sls:stage}"
 
   httpApi:
     cors: true
@@ -43,7 +49,7 @@ provider:
 functions:
 
   test:
-    handler: testing.main
+    handler: api/testing.main
     #url: true
     #events:
     #  - httpApi:
@@ -54,7 +60,7 @@ functions:
   # This function fetches the latest PECO statuses from DynamoDB.
   #
   peco:
-    handler: peco.get_status
+    handler: api/peco.get_status
     events:
       - httpApi:
           path: /peco
@@ -64,7 +70,7 @@ functions:
   # Get recent status.  At this time, the default is 12 (1 hour).
   #
   peco_recent:
-    handler: peco.get_status_recent
+    handler: api/peco.get_status_recent
     events:
       - httpApi: 
           path: /peco/recent
@@ -74,7 +80,7 @@ functions:
   # Live status from PECO (for testing/development purposes)
   #
   peco_live:
-    handler: peco.get_status_live
+    handler: api/peco.get_status_live
     #events: # Debugging
     #  - httpApi: 
     #      path: /peco/live
@@ -86,7 +92,7 @@ functions:
   # a DynamoDB table.
   #
   cron:
-    handler: cron.main
+    handler: api/cron.main
     events:
       - schedule: 
           rate: rate(5 minutes)
@@ -102,6 +108,9 @@ functions:
 resources:
 
   Resources:
+    #
+    # DynanoDB table for storing data.
+    #
     pecoOutagesTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -129,14 +138,27 @@ resources:
         PointInTimeRecoverySpecification:
           PointInTimeRecoveryEnabled: true
 
+    #
+    # Create our bucket.  Public access is blocked by default.
+    #
+    AssetsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: dmuth-peco-${sls:stage}
+
 
 plugins:
-  - serverless-offline
   - serverless-python-requirements
-  # https://www.serverless.com/plugins/serverless-finch
-  - serverless-finch
+  #
   # https://www.serverless.com/plugins/serverless-plugin-resource-tagging
+  #
   - serverless-plugin-resource-tagging
+  #
+  # Used to sync our static assets to S3. 
+  #
+  # https://www.serverless.com/plugins/serverless-s3-sync
+  #
+  - serverless-s3-sync
 
 
 custom:
@@ -144,12 +166,17 @@ custom:
   stage: "${sls:stage}"
   dynamoTableName: "peco-outages-${sls:stage}"
 
-  serverless-offline:
-    httpPort: 3333
+  s3Sync:
+    #
+    # Don't deploy when doing "sls deploy", require "sls s3sync" instead.
+    #
+    noSync: true
 
-  # Deploy static assets with "sls client deploy"
-  client:
-    bucketName: dmuth-test-serverless-${sls:stage}
-    distributionFolder: assets
- 
+    buckets:
+    - bucketName: dmuth-peco-${sls:stage}
+      localDir: hugo/public
+      deleteRemoved: true
+
+
+
 
