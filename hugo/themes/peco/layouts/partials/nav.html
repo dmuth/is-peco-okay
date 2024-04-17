@@ -1,7 +1,7 @@
 <nav>
  <ul>
    <li><a href="/">Home</a></li>
-   <li><a href="/about/index.html">About</a></li>
+   <li><a href="/about/">About</a></li>
  </ul>
 </nav>
 
@@ -13,5 +13,9 @@ This is the development site.  While it is publicly accessible, please refrain f
 
 At this time, the production site is: <b>OFFLINE</b>
 </div>
+{{ else if eq .Site.Params.Env "test" }}
+<div class="alert">
+This is the test site.  It is intended to be run locally on your development machine
+and NOT put on the public-facing Internet.
+</div>
 {{ end }}
-

@@ -6,6 +6,7 @@
 {{ $js_main := resources.Get "js/main.js" }}
 {{ $js_current := resources.Get "js/main-current.js" }}
 {{ $js_recent := resources.Get "js/main-recent.js" }}
+{{ $js_debug := resources.Get "js/debug.js" }}
 
 {{/*
     What's going on here is that resources.Concat caches output based on the filename.
@@ -40,7 +41,7 @@
 {{/* 
     Finally, concatenate each of those Javascript files into a single file.
 */}}
-{{ $scripts := slice $js_main_parsed $js_current $js_recent | resources.Concat $filename | minify | fingerprint  }}
+{{ $scripts := slice $js_main_parsed $js_current $js_recent $js_debug | resources.Concat $filename | minify | fingerprint  }}
 
 <script type="text/javascript" src="{{ $scripts.Permalink }}" integrity="{{ $scripts.Data.Integrity }}" media="screen" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

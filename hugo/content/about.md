@@ -4,6 +4,12 @@ title: About is PECO Okay?
 
 # About Is PECO Okay?
 
+## What is PECO?
+
+PECO, also known as the Philadelphia Electric Company, is the energy utility that serves
+1.6 million electric customers in the Philadelphia area.
+
+
 ## Is this website official?
 
 **No.**  This website is neither run nor endorsed by PECO.  It is my personal side-project.
@@ -42,12 +48,15 @@ The back end consists of AWS Lambda to provide API endpoints, with the underlyin
 written in Python.  The HTML is stored in an S3 bucket and served by CloudFront which performs
 SSL termination.  The data is stored in DynamoDB.
 
+For deplying APIs, Serverless is GREAT!  For DynamoDB tables, it is a mixed bag.  I do NOT
+recommend Serverless for Cloudfront distributions.
+
 
 ## Did you really hand code all of the Javascript and CSS?
 
 I did!  If I were building this in the workplace, I would have used jQuery and Bootstrap, because
 when you're in the office, your job is to complete things quickly, using the tools at hand,
-absent a _really_ good reason to write raw Javascript and CSS.
+absent a _really_ good reason to do it in a way that will take longer.
 
 But this ain't the office, this is a side project.  And it's been awhile since I built something
 without using either a Javascript or CSS framework, and I really wanted to craft some straight up
@@ -61,6 +70,18 @@ Because if I wanted to mess with individual pixels I'd go back to the 3rd Grade,
 at lunch while eating hamburger hash with a spork.
 
 ...or you could just let me use Chart.js like an adult.
+
+
+## How the HECK did you get a default index.html working in a CloudFront Distribution?
+
+I used a Lambda@Edge function to add `index.html` as described [on this page](https://aws.amazon.com/blogs/networking-and-content-delivery/implementing-default-directory-indexes-in-amazon-s3-backed-amazon-cloudfront-origins-using-cloudfront-functions/).  
+
+It would be *really cool* if that functionality was built into CloudFront, Amazon.  Know what I mean?  Nudge nudge.
+
+
+## Is PECO Aware of this website?
+
+Not to my knowledge, but I'd love if someone could introduce me to their Leadership Team so I could show off the site.  I think I have some neat ideas here, and if they wanna steal my code and implement something similar on their website, I think that would be fantastic and would be a win-win for all parties involved.
 
 
 ## Is the source code available?

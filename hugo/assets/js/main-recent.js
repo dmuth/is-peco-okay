@@ -7,7 +7,7 @@ async function fetchRecent() {
 
     return new Promise((resolve) => {
 
-    const url = `${window.api_endpoint_base}/peco/recent?num=18`;
+    const url = `${window.api_endpoint_base}/peco/recent?num=20`;
 
     fetchWithTimeout(url).then(response => {
         if (!response.ok) {
@@ -18,9 +18,9 @@ async function fetchRecent() {
     }).then(data => {
 
         // Sort the elements in ascending order by time.
-        data.reverse();
+        data["recent"].reverse();
 
-        updateGraph(data);
+        updateGraph(data["recent"]);
 
         //
         // Update our list with the recent statuses.
@@ -32,7 +32,10 @@ async function fetchRecent() {
     }).catch(error => {
         // Handle errors
         console.error(`Error fetching ${url}: ${error}`);
-        document.getElementById("peco-status-recent-loading").classList.add("hidden");
+        //document.getElementById("peco-status-recent-loading").classList.add("hidden");
+        document.getElementById("peco-status-error").classList.remove("hidden");
+        document.getElementById("peco-status-error").classList.remove("display-none");
+        //document.getElementById("peco-status-recent-loading").classList.add("hidden");
         document.getElementById("peco-status-recent-error").classList.remove("hidden");
         document.getElementById("peco-status-recent-error").classList.remove("display-none");
 

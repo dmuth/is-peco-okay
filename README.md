@@ -16,6 +16,8 @@
 - `sls invoke local -f peco_recent --data '{ "queryStringParameters": {"num": 18}}'`
   - Run the function locally with some query params (e.g. `/peco/recent?num=18`)
 - `sls offline --reloadHandler` - Run a webserver.  Endpoints will be printed out.  Python files will be hot-reloaded.
+- `bin/cron-status.sh ( test | dev | prod ) ( status | disable | enable )` 
+  - Can be used to disable the script run via cron if we want to save money in testing.
 
 
 ### Working with Web Content
