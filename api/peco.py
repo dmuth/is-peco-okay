@@ -5,6 +5,8 @@ import requests
 
 import lib.peco as peco
 import lib.db as db
+import lib.trends as trends
+import lib.status as status
 
 
 #
@@ -27,6 +29,7 @@ def get_status(event, context):
 
         if type(items[0]) is dict and "humanized" in items[0]:
             stats = items[0]["humanized"]
+            stats = db.convert_decimals_to_ints(stats)
             response = {"statusCode": 200, "body": json.dumps(stats, indent = 4)}
 
         else:
@@ -59,8 +62,8 @@ def parseArgsRecent(event):
 
     num = int(event["queryStringParameters"]["num"])
 
-    error_string = f"Acceptable values are between 1 and 18, inclusive. {num} is out of bounds."
-    if num < 0 or num > 18:
+    error_string = f"Acceptable values are between 1 and 20, inclusive. {num} is out of bounds."
+    if num < 0 or num > 20:
         raise Exception(error_string)
 
     retval = num
@@ -76,6 +79,10 @@ def get_status_recent(event, context):
 
     try:
         num = parseArgsRecent(event)
+        #
+        # Since cron gets statuses every 5 minutes, and the data is in 10 minute
+        # intervals, let's duplicate our number.  We'll dedup results later.
+        #
         limit = num * 2
 
     except Exception as e:
@@ -96,13 +103,37 @@ def get_status_recent(event, context):
     if type(items) is list and len(items):
 
         if type(items[0]) is dict and "humanized" in items[0]:
+
             stats = _get_unique_rows(items)
             #
             # Sometimes we get an extra row, and we want to make sure that the number
             # of rows we return is exactly what we ask for.
             #
             stats = stats[:num]
-            response = {"statusCode": 200, "body": json.dumps(stats, indent = 4)}
+
+            for key, row in enumerate(stats):
+                stats[key] = db.convert_decimals_to_ints(row)
+
+            data = {}
+            data["current"] = stats[0]
+            data["recent"]= stats
+            data["trends"] = {}
+
+            data["current"]["status"] = status.get_status("current", int(data["current"]["customers_outages"]))
+
+            trend = trends.get_hourly_trend(stats, 1)
+            if trend:
+                data["trends"]["1hour"] = trend
+                data["trends"]["1hour"]["status"] = status.get_status("1hour", data["trends"]["1hour"]["num"])
+
+            trend = trends.get_hourly_trend(stats, 3)
+            if trend:
+                data["trends"]["3hour"] = trend
+                data["trends"]["3hour"]["status"] = status.get_status("3hour", data["trends"]["3hour"]["num"])
+
+            #print("Debug Trends", data["trends"])
+
+            response = {"statusCode": 200, "body": json.dumps(data, indent = 4)}
 
         else:
             print(f"ERROR: Bad item: {items[0]}")

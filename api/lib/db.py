@@ -4,10 +4,12 @@
 #
 
 from datetime import datetime, timedelta
+from decimal import Decimal
 import os
 
 import boto3
 import pytz
+
 
 
 #
@@ -35,6 +37,7 @@ def get_dates():
 
     retval["date"] = now.strftime('%Y-%m-%d')
     retval["datetime"] = now.strftime('%Y-%m-%dT%H:%M:%S %Z')
+    retval["hour"] = now.strftime('%H')
     yesterday = now - timedelta(days=1)
     retval["yesterday"] = yesterday.strftime('%Y-%m-%d')
 
@@ -120,5 +123,21 @@ def get_items_recent(table, dates, limit = 1):
         row["humanized"] = humanized_sorted
 
     return(retval)
+
+
+#
+# Convert all decimal types in this dict to integers.
+#
+def convert_decimals_to_ints(data):
+
+    for key, value in data.items():
+
+        if isinstance(value, Decimal):
+            if value.as_tuple().exponent:
+                data[key] = float(value)
+            else:
+                data[key] = int(value)
+
+    return(data)
 
 

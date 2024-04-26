@@ -9,7 +9,7 @@ set -e
 
 function print_syntax() {
     echo "! "
-    echo "! Syntax: $0 ( dev | prod )"
+    echo "! Syntax: $0 ( test | dev | prod )"
     echo "! "
     exit 1
 } # End of print_syntax()
@@ -23,6 +23,10 @@ then
 elif test "$1" == "-h" -o "$1" == "--help"
 then
     print_syntax
+
+elif test "$1" == "test"
+then
+    ENV=$1
 
 elif test "$1" == "dev"
 then

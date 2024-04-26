@@ -1,6 +1,7 @@
 
 
 import json
+from decimal import Decimal
 
 import lib.db as db
 import lib.peco as peco
@@ -23,6 +24,8 @@ def main(event, context):
     # The dates are our partition and sort keys
     data["Date"] = dates["date"]
     data["DateTime"] = dates["datetime"]
+    # The hour is for our secondary Index
+    data["Hour"] = int(dates["hour"])
 
     # Save the raw data and URL that we got from PECO.
     data["raw"] = {
@@ -38,12 +41,12 @@ def main(event, context):
 
     data["humanized"] = {
         "datetime": stats["date"],
-        "customers": str(stats["total_customers"]),
-        "customers_outages": str(stats["total_customers_outage"]),
-        "outages": str(stats["total_outages"]),
-        "customers_active_percent": pct_active,
+        "customers": int(stats["total_customers"]),
+        "customers_outages": int(stats["total_customers_outage"]),
+        "outages": int(stats["total_outages"]),
+        "customers_active_percent": Decimal(pct_active),
         }
- 
+
     #
     # Finally, write everything to DynamoDB
     #

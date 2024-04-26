@@ -97,7 +97,7 @@ function formatTime(datetime) {
 // Main entrypoint.
 //
 fetchCurrent().then(result => {
-    return(fetchRecent());
+    // Do nothing here.  All the work is in the function. :-)
 
 }).catch(error => {
     console.log(`Caught top-level error: ${error}`);
