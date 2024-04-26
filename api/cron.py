@@ -27,6 +27,22 @@ def main(event, context):
     # The hour is for our secondary Index
     data["Hour"] = int(dates["hour"])
 
+    data["PecoDateTime"] = stats["date"]
+
+    #
+    # Grab our most recent record, and if the time of the result from PECO matches, 
+    # don't enter this since it would just be a duplicate.
+    #
+    recent = db.get_items_recent(table, dates, 1)
+    
+    if len(recent) > 0:
+        row = recent[0]
+        if "PecoDateTime" in row:
+            if row["PecoDateTime"] == data["PecoDateTime"]:
+                print(f"PecoDateTime of {row['PecoDateTime']} matches. This result is not new, stopping now.")
+                return(None)
+
+
     # Save the raw data and URL that we got from PECO.
     data["raw"] = {
         "url": url,

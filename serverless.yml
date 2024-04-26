@@ -95,7 +95,7 @@ functions:
     handler: api/cron.main
     events:
       - schedule: 
-          rate: rate(5 minutes)
+          rate: rate(1 minute)
           enabled: true
       #- httpApi: # Debugging
       #    path: /cron
