@@ -37,7 +37,7 @@ def get_dates():
 
     retval["date"] = now.strftime('%Y-%m-%d')
     retval["datetime"] = now.strftime('%Y-%m-%dT%H:%M:%S %Z')
-    retval["hour"] = now.strftime('%H')
+    retval["hour"] = now.strftime('%Y%m%d%H')
     yesterday = now - timedelta(days=1)
     retval["yesterday"] = yesterday.strftime('%Y-%m-%d')
 
