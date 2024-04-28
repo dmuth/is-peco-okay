@@ -120,7 +120,7 @@ resources:
         # If I mess around with the indexes, I will have to briefly rename this table
         # to something else, deploy, then change the name back and deploy a second time.
         #
-        # If I don't do that, Serverless (or CloudFlare) doesn't properly pick up 
+        # If I don't do that, Serverless (or CloudFormation) doesn't properly pick up 
         # what I'm trying to do and will throw an error when it tries to delete 
         # a non-existant table.
         #
