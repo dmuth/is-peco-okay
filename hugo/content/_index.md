@@ -4,7 +4,7 @@ title: Is PECO Okay?
 
 # Is PECO Okay?
 
-## Current Electric Status
+## Current Grid Status
 {{< status-current >}}
 
 ## Recent Statuses

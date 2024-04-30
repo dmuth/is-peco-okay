@@ -89,6 +89,12 @@ Not to my knowledge, but I'd love if someone could introduce me to their Leaders
 Yep!  You can get the source at [https://github.com/dmuth/peco-outage-status](https://github.com/dmuth/peco-outage-status).
 
 
+## Are there any other websites like this one?
+
+Yes!  There is [https://poweroutage.us/](https://poweroutage.us/) which keeps track of power outages
+across the entire United States.
+
+
 ## Have you built anything else?
 
 Yep!  I've built a few things you may find interesting:

@@ -1,0 +1,23 @@
+{{/* Load our CSS. */}}
+
+{{/* 
+    First step is grab each of our files 
+*/}}
+{{ $css_main := resources.Get "sass/main.scss" }}
+{{ $css_mobile := resources.Get "sass/mobile.scss" }}
+
+{{/* Using a similar approach to what I have going in js-main.html to concatenate multiple CSS files. */}}
+
+{{/* 
+    Make our hash and then only grab the first 6 chars so that the final 
+    filename isn't obscenely long. 
+*/}}
+{{ $timehash := time.Now.Unix | sha1 }}
+{{ $timehash := substr $timehash 0 6 }}
+
+{{ $filename := printf "sass/%s.css" $timehash }}
+
+{{ $style := slice $css_main $css_mobile | resources.Concat $filename | resources.ToCSS | minify | fingerprint  }}
+
+<link rel="stylesheet" href="{{ $style.Permalink }}">
+

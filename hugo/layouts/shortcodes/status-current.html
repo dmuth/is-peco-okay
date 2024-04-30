@@ -4,7 +4,10 @@ PECO Status
 
 <div id="peco-status-wrapper">
 
-<div id="peco-status-loading">Loading current status data...</div>
+<div id="peco-status-loading">
+Loading current status data.
+(This may take up to 5 seconds...)
+</div>
 <div id="peco-status-error" class="hidden error display-none">Error fetching current status.</div>
 
 <div id="peco-status" class="peco-rows hidden">
@@ -19,28 +22,33 @@ PECO Status
 <div id="peco-outages-value" class="peco-value" ></div>
 </div>
 
-<div class="peco-row peco-trend peco-trend-1hour">
+<div class="peco-row peco-trend peco-trend-1-hour peco-row-one-third-wide">
 <div id="peco-customers-trend-1-hour" class="peco-label">1 Hour Outage Trend:</div>
 <div id="peco-customers-trend-1-hour-value" class="peco-value" >(Unavailable)</div>
 </div>
 
-<div class="peco-row peco-trend peco-trend-3hour">
+<div class="peco-row peco-trend peco-trend-3-hour peco-row-one-third-wide">
 <div id="peco-customers-trend-3-hour" class="peco-label">3 Hour Outage Trend:</div>
 <div id="peco-customers-trend-3-hour-value" class="peco-value" >(Unavailable)</div>
 </div>
 
-<div class="peco-row">
+<div class="peco-row peco-trend peco-trend-24-hour peco-row-one-third-wide">
+<div id="peco-customers-trend-24-hour" class="peco-label">24 Hour Outage Trend:</div>
+<div id="peco-customers-trend-24-hour-value" class="peco-value" >(Unavailable)</div>
+</div>
+
+<div class="peco-row peco-row-one-third-wide">
 <div id="peco-total-outages" class="peco-label">Total Outages: </div>
 <div id="peco-total-outages-value" class="peco-value" ></div>
 </div>
 
-<div class="peco-row">
+<div class="peco-row peco-row-one-third-wide">
 <div id="peco-customers-online" class="peco-label">% Customers Online: </div>
 <div id="peco-customers-online-value" class="peco-value" ></div>
 </div>
 
-<div class="peco-row peco-row-2x-wide">
-<div id="peco-time" class="peco-label">Time:</div>
+<div class="peco-row peco-row-one-third-wide">
+<div id="peco-time" class="peco-label">Updated:</div>
 <div id="peco-time-value-date" class="peco-value-datetime-time" ></div>
 </div>
 

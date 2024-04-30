@@ -25,7 +25,7 @@ def main(event, context):
     data["Date"] = dates["date"]
     data["DateTime"] = dates["datetime"]
     # The hour is for our secondary Index
-    data["Hour"] = int(dates["hour"])
+    data["Hour"] = dates["hour"]
 
     data["PecoDateTime"] = stats["date"]
 

@@ -49,6 +49,17 @@ def get_status(key, num):
         elif num <= -30000:
             retval = "red"
         
+    elif key == "24hour":
+        if num <= 0:
+            retval = "green"
+        elif num >= 1000 and num < 50000:
+            #
+            # If the nnumber went down by less than 1000, we don't care all that much.
+            #
+            retval = "yellow"
+        elif num <= -50000:
+            retval = "red"
+
     else:
         raise Exception(f"Unknown key: {key}")   
 

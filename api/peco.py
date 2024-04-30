@@ -131,6 +131,28 @@ def get_status_recent(event, context):
                 data["trends"]["3hour"] = trend
                 data["trends"]["3hour"]["status"] = status.get_status("3hour", data["trends"]["3hour"]["num"])
 
+            #
+            # I'm not thrilled that we're doing 24 hour trends here, but it's sort of an edge
+            # case, as it's a spearate fetch from DynamoDB.
+            #
+            tmp = db.get_item_24hours_ago(table, dates["yesterday"], dates["hour_yesterday"])
+            if len(tmp):
+                data["24_hours_ago"] = db.convert_decimals_to_ints(tmp["humanized"])
+
+            if "24_hours_ago" in data:
+                data["trends"]["24hour"] = {}
+                data["trends"]["24hour"]["num"] = (data["current"]["outages"] 
+                    - data["24_hours_ago"]["outages"])
+
+                if data["trends"]["24hour"]["num"] > 0:
+                    data["trends"]["24hour"]["direction"] = "up"
+                else:
+                    data["trends"]["24hour"]["direction"] = "down"
+
+                data["trends"]["24hour"]["status"] = status.get_status("24hour", 
+                    data["trends"]["24hour"]["num"])
+                
+            #print("Debugging", json.dumps(data, indent = 4))
             #print("Debug Trends", data["trends"])
 
             response = {"statusCode": 200, "body": json.dumps(data, indent = 4)}
@@ -138,10 +160,12 @@ def get_status_recent(event, context):
         else:
             print(f"ERROR: Bad item: {items[0]}")
             response = {"statusCode": 500, "body": "Found latest result, but missing computed array."}
+            return(respone)
 
     else:
         print(f"ERROR: Bad repsonse: {items}")
         response = {"statusCode": 500, "body": "Did not find any results from our database query."}
+        return(respone)
 
     #print(f"Debug num: {num}, limit: {limit}, num items: {len(items)}, unique_rows: {len(stats)}")
 
