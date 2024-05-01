@@ -36,7 +36,10 @@ provider:
             - dynamodb:PutItem
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
-          Resource: "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.dynamoTableName}" 
+          Resource: [
+            "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.dynamoTableName}",
+            "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.dynamoTableName}/index/Hour"
+            ]
 
   stackTags:
     project: "peco"
@@ -127,12 +130,13 @@ resources:
         # What a stupid bug.
         #
         TableName: ${self:custom.dynamoTableName}
+        #TableName: ${self:custom.dynamoTableName}-tmp # Uncomment this when changing the table schema
 
         # Set to on-demand capacity mode
         BillingMode: PAY_PER_REQUEST  
 
         # Prevent accidental deletion
-        DeletionProtectionEnabled: true
+        #DeletionProtectionEnabled: true
 
         #
         # Set up our attribute definitions for the Partition Key and Sort Key.
@@ -143,7 +147,7 @@ resources:
           - AttributeName: DateTime
             AttributeType: S
           - AttributeName: Hour
-            AttributeType: N
+            AttributeType: S
 
         KeySchema:
           - AttributeName: Date

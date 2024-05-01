@@ -134,7 +134,7 @@ function updateDashboardTrends(data) {
         }
 
         updateStatusColor(Debug.get("trend.1hour.status", 
-            data["1hour"]["status"]), ".peco-trend-1hour");
+            data["1hour"]["status"]), ".peco-trend-1-hour");
 
     }
 
@@ -155,7 +155,28 @@ function updateDashboardTrends(data) {
         }
 
         updateStatusColor(Debug.get("trend.3hour.status", 
-            data["3hour"]["status"]), ".peco-trend-3hour");
+            data["3hour"]["status"]), ".peco-trend-3-hour");
+
+    }
+
+    if (data["24hour"]) {
+
+        num = Debug.get("trend.24hour.num", parseInt(data["24hour"]["num"])).toLocaleString();
+        direction = Debug.get("trend.24hour.direction", data["24hour"]["direction"]);
+
+        e = document.getElementById("peco-customers-trend-24-hour-value")
+        e.innerHTML = num
+
+        if (direction == "down") {
+            e.innerHTML += " ↘"
+        } else if (direction == "up") {
+            e.innerHTML += " ↗"
+        } else {
+            e.innerHTML += " →"
+        }
+
+        updateStatusColor(Debug.get("trend.24hour.status", 
+            data["24hour"]["status"]), ".peco-trend-24-hour");
 
     }
 

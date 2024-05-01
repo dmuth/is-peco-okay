@@ -92,7 +92,7 @@ function invalidate_cloudfront_cache() {
     echo "# Found Cloudfront distribution ID: ${ID}"
 
     echo "# Invalidating cache... "
-    aws cloudfront create-invalidation --distribution-id E2DQ0IJFCF2BWB --paths "/*"
+    aws cloudfront create-invalidation --distribution-id ${ID} --paths "/*"
 
     echo "# Getting current invalidations..."
     echo

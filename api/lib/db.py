@@ -8,6 +8,7 @@ from decimal import Decimal
 import os
 
 import boto3
+from boto3.dynamodb.conditions import Key
 import pytz
 
 
@@ -40,6 +41,7 @@ def get_dates():
     retval["hour"] = now.strftime('%Y%m%d%H')
     yesterday = now - timedelta(days=1)
     retval["yesterday"] = yesterday.strftime('%Y-%m-%d')
+    retval["hour_yesterday"] = yesterday.strftime('%Y%m%d%H')
 
     return(retval)
 
@@ -61,7 +63,7 @@ def get_items(table, key, value, limit = 100):
     retval = {}
 
     items = table.query(
-        KeyConditionExpression = boto3.dynamodb.conditions.Key(key).eq(value),
+        KeyConditionExpression = Key(key).eq(value),
         ConsistentRead = False,
         ScanIndexForward = False,
         Limit = limit
@@ -140,4 +142,25 @@ def convert_decimals_to_ints(data):
 
     return(data)
 
+
+#
+# Get an item from 24 hours ago.
+#
+def get_item_24hours_ago(table, date_yesterday, hour_yesterday):
+
+    retval = []
+
+    items = table.query(
+        IndexName = "Hour",
+        KeyConditionExpression = 
+            Key("Date").eq(date_yesterday) & Key("Hour").eq(hour_yesterday),
+        ConsistentRead = False,
+        ScanIndexForward = False,
+        Limit = 1
+        )
+
+    if "Items" in items:
+        retval = items["Items"][0]
+
+    return(retval)
 

@@ -25,6 +25,8 @@ var/
 __pycache__
 node_modules
 package-lock.json
+s_*.py         
+
 
 # Vim
 *.swp
