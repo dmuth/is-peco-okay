@@ -12,5 +12,5 @@ enableRobotsTXT = true
 #
 [params]
 env = "prod"
-apiEndpointBase = "https://c814t3ny7i.execute-api.us-east-1.amazonaws.com/"
+apiEndpointBase = "https://api.dev.ispecookay.com"
 

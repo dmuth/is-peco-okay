@@ -118,4 +118,5 @@ Otherwise, you can find me [on the hellscape that is Twitter](https://twitter.co
 [Facebook](https://facebook.com/dmuth), 
 or drop me an email: **doug.muth AT gmail DOT com**.
 
+{{< bottom-padding >}}
 
