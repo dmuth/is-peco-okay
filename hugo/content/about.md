@@ -36,7 +36,7 @@ worse and that it might be awhile before I get power back.  If the number is goi
 know that restoration is happening, and I can expect power back sonner.
 
 Anything else would just waste my phone's battery, hence my decision to create this lightweight,
-text-based website.  Even my [memes](/robots.txt) are text-based!
+text-based website.  [Even my memes are text-based!](/robots.txt)
 
 
 ## What was the site built in?
