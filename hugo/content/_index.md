@@ -12,7 +12,9 @@ title: Is PECO Okay?
 
 {{< bottom-padding >}}
 
-This is NOT an official PECO page.  The official outage page is [here](https://www.peco.com/outages/experiencing-an-outage/outage-map).  Learn more about this site [here](/about).
+This is NOT an official PECO page.  The official outage page is [here](https://www.peco.com/outages/experiencing-an-outage/outage-map).  If you are without power, talk to PECO, not me!
+
+Learn more about this site [here](/about).
 
 {{< bottom-padding >}}
 
