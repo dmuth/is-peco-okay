@@ -93,6 +93,16 @@ function updateDashboardCurrent(data) {
     display["date"] = Debug.get("date",
         formatDate(data["datetime"]) + "&nbsp;" + formatTime(data["datetime"]));
 
+    // Nice
+    if (display["customers_outages"] == 69 || display["customers_outages"] == 420) {
+        display["customers_outages"] += " (Nice)";
+    }
+
+    // Nice
+    if (display["outages"] == 69 || display["outages"] == 420) {
+        display["outages"] += " (Nice)";
+    }
+
     //
     // Get our current status code and set the cell color accordingly.
     //
