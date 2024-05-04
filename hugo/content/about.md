@@ -30,7 +30,7 @@ But here's the thing, I only cared about two numbers:
 - How many customers are without power?
 - And is that number going up or down?
 
-That's it.  That's all I need to know.  Everything is extra.  If the number is going **UP**, 
+That's it.  That's all I need to know.  Everything else is extra.  If the number is going **UP**, 
 I know things are getting
 worse and that it might be awhile before I get power back.  If the number is going **DOWN**, I 
 know that restoration is happening, and I can expect power back sonner.
