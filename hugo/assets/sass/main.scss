@@ -44,20 +44,31 @@ nav ul {
         &:hover {
             text-decoration: underline;
         }
+
+        /* Have a little horizontal space between clickable areas. */
+        margin: 5px;
     }
 
     li {
         display: inline;
+
+    }
+
+    li a {
+
+        /* Make the clickable areas wider. */
+        padding: 10px 20px;
+
+
         &:hover {
             background-color: #888888;
+            text-decoration: underline;
         }
-
-        margin: 10px;
-        padding: 10px;
 
     }
 
 }
+
 
 /* A little padding in our lists. */
 li {

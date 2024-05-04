@@ -96,12 +96,12 @@ function invalidate_cloudfront_cache() {
 
     echo "# Getting current invalidations..."
     echo
-    ./bin/get-cloudfront-cache-invalidations.sh ${ID}
+    ./bin/get-cloudfront-cache-invalidations.sh ${ID} | head -n5
     echo
 
     echo "# "
     echo "# To keep track of invalidation status so you know when complete, run this command:"
-    echo "# ./bin/get-cloudfront-cache-invalidations.sh ${ID}"
+    echo "# ./bin/get-cloudfront-cache-invalidations.sh ${ID} | head -n5"
     echo "# "
 
 } # End of invalidate_cloudfront_cache()
