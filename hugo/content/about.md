@@ -50,7 +50,7 @@ The back end consists of AWS Lambda to provide API endpoints, with the underlyin
 written in Python.  The HTML is stored in an S3 bucket and served by CloudFront which performs
 SSL termination.  The data is stored in DynamoDB.
 
-For deplying APIs, Serverless is GREAT!  For DynamoDB tables, [it is a mixed bag](https://github.com/dmuth/peco-outage-status/blob/7f2f3af88c7ac40a14c63d3f9bcd021b2e58cff6/serverless.yml#L120).  I do NOT
+For deplying APIs, Serverless is GREAT!  For DynamoDB tables, [it is a mixed bag](https://github.com/dmuth/is-peco-okay/blob/7f2f3af88c7ac40a14c63d3f9bcd021b2e58cff6/serverless.yml#L120).  I do NOT
 recommend Serverless for Cloudfront distributions.
 
 
@@ -88,7 +88,7 @@ Not to my knowledge, but I'd love if someone could introduce me to their Leaders
 
 ## Is the source code available?
 
-Yep!  You can get the source at [https://github.com/dmuth/peco-outage-status](https://github.com/dmuth/peco-outage-status).
+Yep!  You can get the source at [https://github.com/dmuth/is-peco-okay](https://github.com/dmuth/is-peco-okay).
 
 
 ## Are there any other websites like this one?

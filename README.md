@@ -1,5 +1,8 @@
 
-# PECO API Endpoint
+# Is PECO Okay?
+
+Text-based low-bandwidth website for real-time information on the Philadelphia Power Grid.
+View on the web at [https://www.IsPecoOkay.com/](https://www.ispecookay.com/).
 
 ## Development
 
