@@ -85,7 +85,7 @@ function updateGraphProcessData(data_in) {
 
     data_in.forEach( (value, key) => {
         
-        var datetime = `${formatDateTimeGraph(value["datetime"])}`;
+        var datetime = `${formatDateTimeGraph(value["PecoDateTime"])}`;
         data["labels"].push(datetime);
         //data["labels"].push(value["datetime"]); // Debugging
         data["datasets"][0]["data"].push(value["customers_outages"]);

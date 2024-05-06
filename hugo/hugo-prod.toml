@@ -12,5 +12,5 @@ enableRobotsTXT = true
 #
 [params]
 env = "prod"
-apiEndpointBase = "https://api.dev.ispecookay.com"
+apiEndpointBase = "https://api.ispecookay.com"
 
