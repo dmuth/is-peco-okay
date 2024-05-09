@@ -12,5 +12,5 @@ enableRobotsTXT = true
 #
 [params]
 env = "test"
-apiEndpointBase = "https://g278mi62k3.execute-api.us-east-1.amazonaws.com/"
+apiEndpointBase = "https://g278mi62k3.execute-api.us-east-1.amazonaws.com"
 

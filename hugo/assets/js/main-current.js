@@ -89,9 +89,9 @@ function updateDashboardCurrent(data) {
         parseInt(data["outages"])).toLocaleString();
     display["customers_active_percent"] = Debug.get("customers.active_percent", 
         data["customers_active_percent"] + "%");
-    var datetime = new Date(data["datetime"]);
+    var datetime = new Date(data["PecoDateTime"]);
     display["date"] = Debug.get("date",
-        formatDate(data["datetime"]) + "&nbsp;" + formatTime(data["datetime"]));
+        formatDate(data["PecoDateTime"]) + "&nbsp;" + formatTime(data["PecoDateTime"]));
 
     // Nice
     if (display["customers_outages"] == 69 || display["customers_outages"] == 420) {

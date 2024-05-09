@@ -14,27 +14,26 @@ import lib.status as status
 #
 def get_status(event, context):
 
-    table = db.get_table()
+    table = db.get_table("main")
     dates = db.get_dates()
 
     items = db.get_items_recent(table, dates, limit = 1)
 
     #print("Debugging", json.dumps(items, indent = 4))
-    #print("Debugging", json.dumps(items[0]["humanized"], indent = 4))
     #items[0] = False # Debugging
     #items[0] = {} # Debugging
     #items = False # Debugging
 
     if type(items) is list and len(items):
 
-        if type(items[0]) is dict and "humanized" in items[0]:
-            stats = items[0]["humanized"]
+        if type(items[0]) is dict:
+            stats = items[0]
             stats = db.convert_decimals_to_ints(stats)
             response = {"statusCode": 200, "body": json.dumps(stats, indent = 4)}
 
         else:
             print(f"ERROR: Bad item: {items[0]}")
-            response = {"statusCode": 500, "body": "Found latest result, but missing computed array."}
+            response = {"statusCode": 500, "body": "Item is not a dictonary."}
 
     else:
         print(f"ERROR: Bad repsonse: {items}")
@@ -46,9 +45,6 @@ def get_status(event, context):
 #
 # Parse our arguments (only argument supported at this time is num),
 # do a sanity check, and return the value or raise an exception.
-#
-# Note that the number we return is twice what's passed in, since we're taking
-# readings from the API every 5 minutes.
 #
 def parseArgsRecent(event):
 
@@ -79,40 +75,43 @@ def get_status_recent(event, context):
 
     try:
         num = parseArgsRecent(event)
-        #
-        # Since cron gets statuses every 5 minutes, and the data is in 10 minute
-        # intervals, let's duplicate our number.  We'll dedup results later.
-        #
-        limit = num * 2
 
     except Exception as e:
         response = {"statusCode": 422, "body": str(e)}
         return(response)
 
-    table = db.get_table()
+    table = db.get_table("main")
     dates = db.get_dates()
 
-    items = db.get_items_recent(table, dates, limit = limit)
+    items = db.get_items_recent(table, dates, limit = num)
 
-    #print("Debugging", json.dumps(items, indent = 4))
-    #print("Debugging", json.dumps(items[0]["humanized"], indent = 4))
+    #print("Debugging", json.dumps(items, indent = 4), len(items))
+    #print("Debugging", items, len(items))
     #items[0] = False # Debugging
     #items[0] = {} # Debugging
     #items = False # Debugging
 
     if type(items) is list and len(items):
 
-        if type(items[0]) is dict and "humanized" in items[0]:
+        #
+        # Check to see if the first result the old style of data.  If it is,
+        # bail out, because we have nothing usable until cron runs.
+        #
+        if type(items[0]) is dict:
+            if "raw" in items[0]:
+                print(f"ERROR: First row has 'raw' key, which means it is in the old style and not usable.  Bailing out!")
+                response = {"statusCode": 500, "body": "First result was in old format and is unusable. Wait for cron to run."}
+                return(response)
 
-            stats = _get_unique_rows(items)
+        if type(items[0]) is dict:
+
+            stats = _sanitize_rows(items)
+
             #
             # Sometimes we get an extra row, and we want to make sure that the number
             # of rows we return is exactly what we ask for.
             #
             stats = stats[:num]
-
-            for key, row in enumerate(stats):
-                stats[key] = db.convert_decimals_to_ints(row)
 
             data = {}
             data["current"] = stats[0]
@@ -137,7 +136,7 @@ def get_status_recent(event, context):
             #
             tmp = db.get_item_24hours_ago(table, dates["yesterday"], dates["hour_yesterday"])
             if len(tmp):
-                data["24_hours_ago"] = db.convert_decimals_to_ints(tmp["humanized"])
+                data["24_hours_ago"] = db.convert_decimals_to_ints(tmp)
 
             if "24_hours_ago" in data:
                 data["trends"]["24hour"] = {}
@@ -159,13 +158,12 @@ def get_status_recent(event, context):
 
         else:
             print(f"ERROR: Bad item: {items[0]}")
-            response = {"statusCode": 500, "body": "Found latest result, but missing computed array."}
-            return(respone)
+            response = {"statusCode": 500, "body": "Item is not a dictonary."}
 
     else:
         print(f"ERROR: Bad repsonse: {items}")
         response = {"statusCode": 500, "body": "Did not find any results from our database query."}
-        return(respone)
+        return(response)
 
     #print(f"Debug num: {num}, limit: {limit}, num items: {len(items)}, unique_rows: {len(stats)}")
 
@@ -173,31 +171,25 @@ def get_status_recent(event, context):
 
 
 #
-# Take a list of stats and dedup readings during the same time.
-# PECO updates its status every 10 minutes, and the crontab reads once
-# every 5 minutes, just in case a single read fails.
-#
-def _get_unique_rows(items):
+# Sanitize our rows, removing old style rows.
+# 
+def _sanitize_rows(items):
 
-    stats = []
-    last = ""
+    retval = []
 
     for row in items:
 
-        if row["humanized"]["datetime"] == last:
+        # If this is an old-style row, skip it.
+        if "raw" in row:
             continue
 
-        stats.append(row["humanized"])
+        row = db.convert_decimals_to_ints(row)
 
-        last = row["humanized"]["datetime"]
+        retval.append(row)
 
+    #print("DEBUG", len(retval), retval)
 
-    #print("DEBUG", stats[0])
-    #print("DEBUG", stats)
-    #print("DEBUG LEN", len(stats))
-    #stats = []
-
-    return(stats)
+    return(retval)
 
 
 #

@@ -16,10 +16,16 @@ import pytz
 #
 # Return an object for the DynamoDB Table
 #
-def get_table():
+# key - Used to determine which table to return.
+#
+def get_table(key):
 
-    env = os.environ["STAGE"]
-    table_name = f"peco-outages-{env}"
+    if key == "main":
+        table_name = os.environ["DYNAMO_TABLE_NAME"]
+    elif key == "archive":
+        table_name = os.environ["DYNAMO_TABLE_NAME_ARCHIVE"]
+    else:
+        raise Exception(f"Unknown key for DynamoDB table: {key}")
 
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(table_name)
@@ -71,6 +77,8 @@ def get_items(table, key, value, limit = 100):
 
     if "Items" in items:
         retval = items["Items"]
+    #del items["Items"]; print("DEBUG Items", key, items) # Debugging
+    #print("DEBUG Response size:", table, key, value, items["ResponseMetadata"]["HTTPHeaders"]["content-length"]) # Debugging
 
     return(retval)
 
@@ -118,17 +126,14 @@ def get_items_recent(table, dates, limit = 1):
         #print(f"DEBUG: Only fetched {len(retval)} items, fetching {new_limit} more from yesterday ({data['Date']})")
         retval += get_items(table, "Date", data["Date"], limit = new_limit)
 
-    for row in retval:
-        humanized_sorted = {}
-        for key in sorted(row["humanized"], key = sort_humanized_dict):
-            humanized_sorted[key] = row["humanized"][key]
-        row["humanized"] = humanized_sorted
-
     return(retval)
 
 
 #
-# Convert all decimal types in this dict to integers.
+# Convert all decimal types in this dict to floats or integers.
+#
+# They needed to be stored in DynamoDB as Decimal types (or at least Boto required it),
+# but we'd like them as floats or ints in Python for my own sanity.
 #
 def convert_decimals_to_ints(data):
 
@@ -160,7 +165,11 @@ def get_item_24hours_ago(table, date_yesterday, hour_yesterday):
         )
 
     if "Items" in items:
-        retval = items["Items"][0]
+        # If we have an old-style row, don't return anything.
+        if len(items["Items"]):
+            if "humanized" in items["Items"][0]:
+                return(retval)
+            retval = items["Items"][0]
 
     return(retval)
 
