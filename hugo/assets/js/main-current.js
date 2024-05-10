@@ -7,8 +7,9 @@ function fetchCurrent() {
 
     return new Promise((resolve) => {
 
-    //const url = `${window.api_endpoint_base}/peco`;
-    const url = `${window.api_endpoint_base}/peco/recent?num=20`;
+    let hours = getNumHours();
+    let num_readings = hours * 6;
+    const url = `${window.api_endpoint_base}/peco/recent?num=${num_readings}`;
 
     fetchWithTimeout(url).then(response => {
 
@@ -202,5 +203,31 @@ function updateDashboard(data) {
     updateDashboardTrends(data["trends"]);
 
 } // End of updateDashboard()
+
+
+/**
+* Get our number of hours from GET method data, along with sanity checking.
+*/
+function getNumHours() {
+
+    const params = new URLSearchParams(window.location.search);
+    let hours = 3;   
+    if (params.has("hours")) {
+
+        hours = parseInt(params.get("hours"));
+
+        if (hours < 3) {
+            hours = 3;
+        } else if (hours > 24) {
+            hours = 24;
+        } else if (isNaN(hours)) {
+            hours = 3;
+        }
+        
+    }
+
+    return(hours);
+
+} // End of getNumHours()
 
 

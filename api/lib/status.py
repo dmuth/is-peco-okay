@@ -32,7 +32,7 @@ def get_status(key, num):
             retval = "green"
         elif num >= 100 and num < 10000:
             #
-            # If the nnumber went down by less than 100, we don't care all that much.
+            # If the number went down by less than 100, we don't care all that much.
             #
             retval = "yellow"
         elif num >= 10000:
@@ -43,10 +43,10 @@ def get_status(key, num):
             retval = "green"
         elif num >= 300 and num < 30000:
             #
-            # If the nnumber went down by less than 300, we don't care all that much.
+            # If the number went down by less than 300, we don't care all that much.
             #
             retval = "yellow"
-        elif num <= -30000:
+        elif num >= 30000:
             retval = "red"
         
     elif key == "24hour":
@@ -54,10 +54,10 @@ def get_status(key, num):
             retval = "green"
         elif num >= 1000 and num < 50000:
             #
-            # If the nnumber went down by less than 1000, we don't care all that much.
+            # If the number went down by less than 1000, we don't care all that much.
             #
             retval = "yellow"
-        elif num <= -50000:
+        elif num >= 50000:
             retval = "red"
 
     else:
