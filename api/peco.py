@@ -58,8 +58,8 @@ def parseArgsRecent(event):
 
     num = int(event["queryStringParameters"]["num"])
 
-    error_string = f"Acceptable values are between 1 and 20, inclusive. {num} is out of bounds."
-    if num < 0 or num > 20:
+    if num < 0 or num > 144:
+        error_string = f"Acceptable values are between 1 and 144, inclusive. {num} is out of bounds."
         raise Exception(error_string)
 
     retval = num
@@ -116,43 +116,21 @@ def get_status_recent(event, context):
             data = {}
             data["current"] = stats[0]
             data["recent"]= stats
-            data["trends"] = {}
 
             data["current"]["status"] = status.get_status("current", int(data["current"]["customers_outages"]))
 
-            trend = trends.get_hourly_trend(stats, 1)
-            if trend:
-                data["trends"]["1hour"] = trend
-                data["trends"]["1hour"]["status"] = status.get_status("1hour", data["trends"]["1hour"]["num"])
+            data["trends"] = _get_trends(table, dates, data)
 
-            trend = trends.get_hourly_trend(stats, 3)
-            if trend:
-                data["trends"]["3hour"] = trend
-                data["trends"]["3hour"]["status"] = status.get_status("3hour", data["trends"]["3hour"]["num"])
-
-            #
-            # I'm not thrilled that we're doing 24 hour trends here, but it's sort of an edge
-            # case, as it's a spearate fetch from DynamoDB.
-            #
-            tmp = db.get_item_24hours_ago(table, dates["yesterday"], dates["hour_yesterday"])
-            if len(tmp):
-                data["24_hours_ago"] = db.convert_decimals_to_ints(tmp)
-
-            if "24_hours_ago" in data:
-                data["trends"]["24hour"] = {}
-                data["trends"]["24hour"]["num"] = (data["current"]["outages"] 
-                    - data["24_hours_ago"]["outages"])
-
-                if data["trends"]["24hour"]["num"] > 0:
-                    data["trends"]["24hour"]["direction"] = "up"
-                else:
-                    data["trends"]["24hour"]["direction"] = "down"
-
-                data["trends"]["24hour"]["status"] = status.get_status("24hour", 
-                    data["trends"]["24hour"]["num"])
-                
             #print("Debugging", json.dumps(data, indent = 4))
             #print("Debug Trends", data["trends"])
+            #
+            # Dump in some debugging info here.
+            #
+            data["debug"] = {}
+            data["debug"]["len"] = len(items)
+            data["debug"]["start"] = data["recent"][0]["DateTime"]
+            data["debug"]["end"] = data["recent"][-1]["DateTime"]
+            #print(data["debug"], len(data["recent"])) # Debugging
 
             response = {"statusCode": 200, "body": json.dumps(data, indent = 4)}
 
@@ -168,6 +146,52 @@ def get_status_recent(event, context):
     #print(f"Debug num: {num}, limit: {limit}, num items: {len(items)}, unique_rows: {len(stats)}")
 
     return(response)
+
+
+#
+# Get our trends.
+#
+def _get_trends(table, dates, data):
+
+    retval = {}
+
+    trend = trends.get_hourly_trend(data["recent"], 1)
+    if trend:
+        retval["1hour"] = trend
+        retval["1hour"]["status"] = status.get_status("1hour", retval["1hour"]["num"])
+
+    trend = trends.get_hourly_trend(data["recent"], 3)
+    if trend:
+        retval["3hour"] = trend
+        retval["3hour"]["status"] = status.get_status("3hour", retval["3hour"]["num"])
+
+    if len(data["recent"]) > 140:
+        #
+        # If we already have 24 hours (or close enough to it), just 
+        # grab the very last item.
+        #
+        tmp = data["recent"][-1]
+    else:
+        #
+        # If we don't have 24 hours worth of data, fetch that row explicitly.
+        #
+        tmp = db.get_item_24hours_ago(table, dates["yesterday"], dates["hour_yesterday"])
+
+    if len(tmp):
+        hours_ago_24 = db.convert_decimals_to_ints(tmp)
+
+        retval["24hour"] = {}
+        retval["24hour"]["num"] = (data["current"]["outages"] 
+            - hours_ago_24["outages"])
+
+        if retval["24hour"]["num"] > 0:
+            retval["24hour"]["direction"] = "up"
+        else:
+            retval["24hour"]["direction"] = "down"
+
+        retval["24hour"]["status"] = status.get_status("24hour", retval["24hour"]["num"])
+
+    return(retval)
 
 
 #

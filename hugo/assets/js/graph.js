@@ -1,52 +1,6 @@
 
 
 /**
-* Fetch recent statuses from PECO and update the DOM.
-*/
-async function fetchRecent() {
-
-    return new Promise((resolve) => {
-
-    const url = `${window.api_endpoint_base}/peco/recent?num=20`;
-
-    fetchWithTimeout(url).then(response => {
-        if (!response.ok) {
-            throw new Error(`Network response was not ok: ${response.status}`);
-        }
-        return(response.json());
-
-    }).then(data => {
-
-        // Sort the elements in ascending order by time.
-        data["recent"].reverse();
-
-        updateGraph(data["recent"]);
-
-        //
-        // Update our list with the recent statuses.
-        //
-
-        // Tell our caller to move onto the next function.
-        resolve();
-
-    }).catch(error => {
-        // Handle errors
-        console.error(`Error fetching ${url}: ${error}`);
-        //document.getElementById("peco-status-recent-loading").classList.add("hidden");
-        document.getElementById("peco-status-error").classList.remove("hidden");
-        document.getElementById("peco-status-error").classList.remove("display-none");
-        //document.getElementById("peco-status-recent-loading").classList.add("hidden");
-        document.getElementById("peco-status-recent-error").classList.remove("hidden");
-        document.getElementById("peco-status-recent-error").classList.remove("display-none");
-
-    }); // End of fetchWithTimeout()
-
-    }); // End of promise()
-
-} // End of fetchRecent()
-
-
-/**
 * Format our date and time for the graph.
 */
 function formatDateTimeGraph(datetime) {
@@ -71,16 +25,30 @@ function updateGraphProcessData(data_in) {
 
     var data = {
         labels: [],
-        datasets: [{
+        datasets: [
+            {
             label: "Customer Outages",
             data: [],
             borderColor: "blue",
             borderWidth: 3,
             pointStyle: "circle",
-            pointRadius: 5,
+            pointRadius: 3,
             pointBorderColor: "blue",
             pointBackgroundColor: "blue",
-            }],
+            yAxisID: 'y',
+            },
+            {
+            label: "Outages",
+            data: [],
+            borderColor: "red",
+            borderWidth: 3,
+            pointStyle: "circle",
+            pointRadius: 3,
+            pointBorderColor: "red",
+            pointBackgroundColor: "red",
+            yAxisID: 'y2',
+            },
+            ],
         }
 
     data_in.forEach( (value, key) => {
@@ -89,8 +57,9 @@ function updateGraphProcessData(data_in) {
         data["labels"].push(datetime);
         //data["labels"].push(value["datetime"]); // Debugging
         data["datasets"][0]["data"].push(value["customers_outages"]);
-        //data["datasets"][0]["data"].push(key + 10); // Debugging
+        data["datasets"][1]["data"].push(value["outages"]);
         //data["datasets"][0]["data"].push(10); // Debugging
+        //data["datasets"][1]["data"].push(210); // Debugging
 
         });
 
@@ -114,6 +83,23 @@ function updateGraphGetOptions(data) {
                     ticks: {
                         // Don't show decimal points if we have a very small range.
                         precision: 0
+                    },
+                    position: "left",
+                },
+            y2: {
+                title: {
+                    display: true,
+                    text: "Outages"
+                    },
+                    ticks: {
+                        // Don't show decimal points if we have a very small range.
+                        precision: 0
+                    },
+                    position: "right",
+                },
+            x: {
+                ticks: {
+                    maxTicksLimit: 24
                     },
                 },
             },
@@ -216,5 +202,6 @@ function updateGraph(data_in) {
     window.addEventListener('resize', handleResizeCallback);
 
 } // End of updateGraph()
+
 
 
