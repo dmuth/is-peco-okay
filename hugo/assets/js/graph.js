@@ -27,7 +27,7 @@ function updateGraphProcessData(data_in) {
         labels: [],
         datasets: [
             {
-            label: "Customer Outages",
+            label: "Customers Impacted",
             data: [],
             borderColor: "blue",
             borderWidth: 3,
@@ -78,7 +78,7 @@ function updateGraphGetOptions(data) {
             y: {
                 title: {
                     display: true,
-                    text: "Customer Outages"
+                    text: "Customers Impacted"
                     },
                     ticks: {
                         // Don't show decimal points if we have a very small range.
@@ -105,7 +105,8 @@ function updateGraphGetOptions(data) {
             },
         plugins: {
             legend: {
-                display: false,
+                display: true,
+                position: "bottom",
                 }
             }
         }
