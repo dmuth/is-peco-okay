@@ -11,10 +11,6 @@
         width: 90%;
     }
 
-    /* Alerts */
-    .alert {
-    }
-
     /* Default width of an element. */
     .peco-row {
         width: calc(100% - 20px);
@@ -39,4 +35,11 @@
 
 }
 
+@media (max-width: $width-mobile-upright) {
+
+    /* Only show this if the width is narrow, like on a phone held upright. */
+    #peco-status-recent-width-warning {
+        display: block;
+    }
+}
 

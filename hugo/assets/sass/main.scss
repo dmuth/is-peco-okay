@@ -4,6 +4,7 @@ $font-size: 16px;
 /* Make the font size bigger on mobile, because readability is a concern otherwise. */
 $font-size-mobile: 18px;
 $width-mobile: 1024px;
+$width-mobile-upright: 512px;
 
 body {
     font-family: $font-stack;
@@ -137,13 +138,19 @@ footer {
     padding: 20px;
 }
 
+/* Warnings */
+.warning {
+    background-color: #feb60c;
+    /* Border for debugging. 
+    border: 1px solid black;
+    */
+    border-radius: 5px; 
+    padding: 20px;
+}
+
 
 /* Regular screen. */
 @media (min-width: $width-mobile) {
-
-    /* Alerts */
-    .alert {
-    }
 
     /* Distribute our items evenly with space inbetween. */
     .peco-rows {
@@ -175,6 +182,11 @@ footer {
 
 }
 
+/* This is hidden by default. */
+#peco-status-recent-width-warning {
+    display: none;
+}
+
 .peco-label {
     font-size: 1.5em;
 }
@@ -193,4 +205,5 @@ footer {
 .bottom-padding {
     height: 50px;
 }
+
 
