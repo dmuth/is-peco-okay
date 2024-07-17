@@ -181,8 +181,8 @@ def _get_trends(table, dates, data):
         hours_ago_24 = db.convert_decimals_to_ints(tmp)
 
         retval["24hour"] = {}
-        retval["24hour"]["num"] = (data["current"]["outages"] 
-            - hours_ago_24["outages"])
+        retval["24hour"]["num"] = (data["current"]["customers_outages"] 
+            - hours_ago_24["customers_outages"])
 
         if retval["24hour"]["num"] > 0:
             retval["24hour"]["direction"] = "up"
