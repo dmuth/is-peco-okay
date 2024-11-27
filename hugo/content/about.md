@@ -78,12 +78,12 @@ at lunch while eating hamburger hash with a spork.
 
 I used a Lambda@Edge function to add `index.html` as described [on this page](https://aws.amazon.com/blogs/networking-and-content-delivery/implementing-default-directory-indexes-in-amazon-s3-backed-amazon-cloudfront-origins-using-cloudfront-functions/).  
 
-It would be *really cool* if that functionality was built into CloudFront, Amazon.  Know what I mean?  Nudge nudge.
+It would be *really cool* if that functionality was built into CloudFront, Amazon.  Come on, Amazon, I know you can do it.  I believe in you.
 
 
 ## Is PECO Aware of this website?
 
-Not to my knowledge, but I'd love if someone could introduce me to their Leadership Team so I could show off the site.  I think I have some neat ideas here, and if they wanna steal my code and implement something similar on their website, I think that would be fantastic and would be a win-win for all parties involved.
+[They are now!](https://technical.ly/software-development/is-peco-okay-power-outage-tracker-doug-muth-septa/)  PECO's leadership hasn't complained to me or sent me any legal threats, and I take that to be a good sign.  If nothing else, I hope the site brightened their day a little.
 
 
 ## Is the source code available?
@@ -110,6 +110,13 @@ Yep!  I've built a few things you may find interesting:
 - [Tarsplit](https://github.com/dmuth/tarsplit) - Split a tarball on file boundaries.
 - [Grafana Network Monitor](https://github.com/dmuth/grafana-network-monitor) - A quick and dirty collection of scripts and dashboards I built to monitor my home's Internet connectivity by pinging multiple hosts on the Internet.
 - ...or just [poke around my GitHub](https://github.com/dmuth)
+
+
+## Got any press coverage?
+
+[Technical.ly did a nice writeup on this site in Jun, 2024.](https://technical.ly/software-development/is-peco-okay-power-outage-tracker-doug-muth-septa/)
+
+If you wanna interview me for a story on this site, feel free to reach out!
 
 
 ## Get In Touch
