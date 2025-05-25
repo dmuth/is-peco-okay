@@ -33,7 +33,7 @@ But here's the thing, I only cared about two numbers:
 That's it.  That's all I need to know.  Everything else is extra.  If the number is going **UP**, 
 I know things are getting
 worse and that it might be awhile before I get power back.  If the number is going **DOWN**, I 
-know that restoration is happening, and I can expect power back sonner.
+know that restoration is happening, and I can expect power back sooner.
 
 Anything else would just waste my phone's battery, hence my decision to create this lightweight,
 text-based website.  [Even my memes are text-based!](/robots.txt)
