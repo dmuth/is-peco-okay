@@ -231,6 +231,18 @@ plugins:
   #
   - serverless-s3-sync
 
+package:
+  #
+  # Exclude a bunch of stuff that we don't need.
+  # This will make the package much smaller and faster to upload.
+  #
+  patterns:
+    - '!node_modules/**'
+    - '!.venv/**'
+    - '!__pycache__/**'
+    - '!*.pyc'
+    - '!.pytest_cache/**'
+    - '!tests/**'
 
 custom:
 
@@ -252,7 +264,4 @@ custom:
     - bucketName: dmuth-peco-${sls:stage}
       localDir: hugo/public
       deleteRemoved: true
-
-
-
 
