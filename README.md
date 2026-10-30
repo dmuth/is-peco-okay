@@ -9,12 +9,9 @@ View on the web at [https://www.IsPecoOkay.com/](https://www.ispecookay.com/).
 ### Setup
 
 ``` bash
-# Install any other plugins in the `plugins:` section in `serverless.yml` as-needed.
-serverless plugin install -n serverless-python-requirements
-
 # Set up our environment
 rm -rfv .venv
-uv venv --python 3.10 --seed
+uv venv --python 3.13 --seed
 source .venv/bin/activate
 uv pip install -r requirements.txt
 uv export --format requirements-txt -o requirements.txt
@@ -23,12 +20,14 @@ uv export --format requirements-txt -o requirements.txt
 ### Actual Development
 
 ``` bash
-# List functions for a tsage
+# List functions for a stage
 sls info --stage dev
 
-# 
+#
 # Run functions locally
 #
+# Run this in each new shell before invoking functions; Serverless uses `python3` from PATH.
+source .venv/bin/activate
 sls invoke local -f peco 
 sls invoke local -f peco_recent
 sls invoke local -f peco_recent --data '{ "queryStringParameters": {"num": 18}}'
@@ -39,7 +38,7 @@ sls invoke --stage dev -f peco_recent
 # Run functions off of prod
 sls invoke --stage prod -f peco_recent
 
-# Run a webserver.  Endpoints will be printed out.  Python files will be hot-reloaded.
+# Run a webserver. Endpoints will be printed out. Python files will be hot-reloaded.
 sls offline --reloadHandler
 
 # Can be used to disable the script run via cron if we want to save money in testing.
@@ -117,19 +116,8 @@ sls logs -f peco
 Make sure you have the following in `serverless.yml`:
 
 ```
-plugins:
-  - serverless-python-requirements
+custom:
+  pythonRequirements: {}
 ```
 
-Install that plugin with:
-```bash
-serverless plugin install -n serverless-python-requirements
-```
-
-Also, if you're on a Mac, you may run into issues with cross-compiling.  In that case, you'll need to use a `virtualenv` while using Serverless.
-  - `brew install pipx`
-  - `pipx install virtualenv`
-  - `./bin/activate` - Activate your VirtualEnv
-  - `deactivate` - Deactivate your VirtualEnv
-
-
+Python requirements packaging is built into Serverless Framework v4. For local invocation on macOS, activate the project's virtual environment so `python3` resolves to `.venv/bin/python3` and can import the packages installed from `requirements.txt`.

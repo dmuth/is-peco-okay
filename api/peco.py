@@ -3,10 +3,7 @@ import json
 
 import requests
 
-import lib.peco as peco
-import lib.db as db
-import lib.trends as trends
-import lib.status as status
+from api.lib import db, peco, status, trends
 
 
 #
@@ -227,5 +224,4 @@ def get_status_live(event, context):
     response = {"statusCode": 200, "body": json.dumps(stats, indent = 4)}
 
     return(response)
-
 

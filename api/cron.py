@@ -4,8 +4,7 @@ import json
 from decimal import Decimal
 import time
 
-import lib.db as db
-import lib.peco as peco
+from api.lib import db, peco
 
 
 #
@@ -85,5 +84,4 @@ def main(event, context):
             data["stats"][key] = Decimal(str(value))
 
     db.put_item(table, data)
-
 

@@ -6,7 +6,6 @@
 org: dmuth
 app: peco
 service: peco-api
-frameworkVersion: '3'
 
 provider:
   name: aws
@@ -14,7 +13,7 @@ provider:
   # This is a faster method, and will be the default in Serverless 4
   deploymentMethod: direct
 
-  runtime: python3.10
+  runtime: python3.13
 
   # Don't keep old versions of functions.
   versionFunctions: false
@@ -26,7 +25,6 @@ provider:
     STAGE: ${sls:stage}
     DYNAMO_TABLE_NAME: !Ref pecoOutagesTable
     DYNAMO_TABLE_NAME_ARCHIVE: !Ref pecoOutagesTableArchive
-
 
   iam:
     role:
@@ -59,7 +57,6 @@ provider:
 
   httpApi:
     cors: true
-
 
 functions:
 
@@ -101,7 +98,6 @@ functions:
     #      path: /peco/live
     #      method: get
 
-
   #
   # This function fetches PECO's status periodically and writes it to 
   # a DynamoDB table.
@@ -115,7 +111,6 @@ functions:
       #- httpApi: # Debugging
       #    path: /cron
       #    method: get
-
 
 #
 # Our resources are in CloudFormation syntax
@@ -185,7 +180,6 @@ resources:
           AttributeName: "ttl"
           Enabled: true
 
-
     #
     # This table holds the raw data that we got back from PECO.
     # This table won't be used by the website, but rather for archival purposes.
@@ -208,7 +202,6 @@ resources:
           - AttributeName: DateTime
             KeyType: HASH
 
-
     #
     # Create our bucket.  Public access is blocked by default.
     #
@@ -217,9 +210,8 @@ resources:
       Properties:
         BucketName: dmuth-peco-${sls:stage}
 
-
 plugins:
-  - serverless-python-requirements
+  - serverless-offline
   #
   # https://www.serverless.com/plugins/serverless-plugin-resource-tagging
   #
@@ -247,12 +239,12 @@ package:
 custom:
 
   stage: "${sls:stage}"
+  pythonRequirements: {}
   #
   # This is the source of truth for Dynamo table names.
   #
   dynamoTableName: "peco-outages-${sls:stage}"
   dynamoTableNameArchive: "peco-outages-archive-${sls:stage}"
-
 
   s3Sync:
     #
@@ -264,4 +256,3 @@ custom:
     - bucketName: dmuth-peco-${sls:stage}
       localDir: hugo/public
       deleteRemoved: true
-

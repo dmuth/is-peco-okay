@@ -8,8 +8,7 @@ import os
 import requests
 import boto3
 
-import lib.db as db
-import lib.peco as peco
+from api.lib import db, peco
 
 
 #
@@ -85,5 +84,4 @@ def main(event, context):
     response = {"statusCode": 200, "body": json.dumps(body)}
 
     return response
-
 
