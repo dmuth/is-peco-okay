@@ -1,6 +1,6 @@
 
 baseURL = 'https://dev.ispecookay.com/'
-languageCode = 'en-us'
+locale = 'en-US'
 title = 'Is PECO Okay?'
 theme = 'peco'
 
@@ -12,5 +12,3 @@ enableRobotsTXT = true
 #
 [params]
 env = "dev"
-apiEndpointBase = "https://api.dev.ispecookay.com"
-

@@ -9,7 +9,7 @@ function fetchCurrent() {
 
     let hours = getNumHours();
     let num_readings = hours * 6;
-    const url = `${window.api_endpoint_base}/peco/recent?num=${num_readings}`;
+    const url = `/peco/recent?num=${num_readings}`;
 
     fetchWithTimeout(url).then(response => {
 
@@ -229,5 +229,4 @@ function getNumHours() {
     return(hours);
 
 } // End of getNumHours()
-
 

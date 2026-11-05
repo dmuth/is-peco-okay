@@ -1,6 +1,6 @@
 
 baseURL = 'https://dev.ispecookay.com/'
-languageCode = 'en-us'
+locale = 'en-US'
 title = 'Is PECO Okay?'
 theme = 'peco'
 
@@ -12,5 +12,3 @@ enableRobotsTXT = true
 #
 [params]
 env = "test"
-apiEndpointBase = "https://g278mi62k3.execute-api.us-east-1.amazonaws.com"
-

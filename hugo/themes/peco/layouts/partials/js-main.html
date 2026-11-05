@@ -34,7 +34,6 @@
     Now set $templateData to a dictionary, then process the main Javascript file as a template. 
 */}}
 {{ $templateData := dict 
-    "apiEndpointBase" .Site.Params.apiEndpointBase 
     "env" .Site.Params.Env }}
 {{ $js_main_parsed := $js_main | resources.ExecuteAsTemplate $filename $templateData }}
 
@@ -43,6 +42,5 @@
 */}}
 {{ $scripts := slice $js_main_parsed $js_current $js_graph $js_debug | resources.Concat $filename | minify | fingerprint  }}
 
-<script type="text/javascript" src="{{ $scripts.Permalink }}" integrity="{{ $scripts.Data.Integrity }}" media="screen" crossorigin="anonymous"></script>
+<script type="text/javascript" src="{{ $scripts.RelPermalink }}" integrity="{{ $scripts.Data.Integrity }}" media="screen" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-

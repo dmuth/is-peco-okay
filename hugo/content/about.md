@@ -45,8 +45,8 @@ The HTML, Javascript, and CSS are managed with [Hugo](https://gohugo.io/), which
 static site generator.
 
 The backend is a Python application built with FastAPI. It stores outage history and raw
-source data in a local SQLite database. The static site is stored in an S3 bucket and served
-by CloudFront, which performs SSL termination.
+source data in a local SQLite database. Hugo generates the static site, and FastAPI serves
+those files alongside the API.
 
 
 ## Did you really hand code all of the Javascript and CSS?
@@ -69,11 +69,10 @@ at lunch while eating hamburger hash with a spork.
 ...or you could just let me use Chart.js like an adult.
 
 
-## How the HECK did you get a default index.html working in a CloudFront Distribution?
+## How is the website served?
 
-I use a CloudFront Function to add `index.html` as described [on this page](https://aws.amazon.com/blogs/networking-and-content-delivery/implementing-default-directory-indexes-in-amazon-s3-backed-amazon-cloudfront-origins-using-cloudfront-functions/).
-
-It would be *really cool* if that functionality was built into CloudFront, Amazon.  Come on, Amazon, I know you can do it.  I believe in you.
+Hugo generates the HTML pages, and FastAPI serves the generated files. The API and website
+share the same host, so the page can request outage data using relative URLs.
 
 
 ## Is PECO Aware of this website?

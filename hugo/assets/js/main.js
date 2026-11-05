@@ -4,12 +4,6 @@
 
 console.log("Our environment: {{ .env }}");
 
-//
-// This will be substituted in by Hugo with the dev or prod base URL.
-//
-window.api_endpoint_base = "{{ .apiEndpointBase }}";
-
-
 /**
 * Fade in an element.
 *
@@ -103,6 +97,5 @@ fetchCurrent().then(result => {
     console.log(`Caught top-level error: ${error}`);
 
 });
-
 
 
