@@ -8,14 +8,13 @@ import json
 import os
 from pathlib import Path
 import sqlite3
-import time
 from typing import Generator, Literal
 
 import pytz
 
 
 TableName = Literal["main", "archive"]
-DEFAULT_DATABASE_PATH = "peco-outages.sqlite3"
+DEFAULT_DATABASE_PATH = "db.sqlite"
 
 
 @dataclass(frozen=True)
@@ -30,14 +29,8 @@ _SQL_TABLES = {
 }
 
 _QUERY_COLUMNS = {
-    "main": {
-        "Date": '"Date"',
-        "DateTime": '"DateTime"',
-        "Hour": '"Hour"',
-    },
-    "archive": {
-        "DateTime": '"DateTime"',
-    },
+    "main": {"timestamp": '"timestamp"'},
+    "archive": {"timestamp": '"timestamp"'},
 }
 
 
@@ -45,39 +38,29 @@ def _database_path() -> Path:
     return Path(os.environ.get("SQLITE_DATABASE_PATH", DEFAULT_DATABASE_PATH)).expanduser()
 
 
+def _format_timestamp(value: datetime) -> str:
+    return value.astimezone(pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+
 def _initialize_database(database_path: Path) -> None:
     database_path.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(database_path, timeout=30)
     try:
         connection.execute("PRAGMA journal_mode = WAL")
-        connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS main_records (
-                "Date" TEXT NOT NULL,
-                "DateTime" TEXT NOT NULL,
-                "Hour" TEXT,
-                ttl INTEGER,
-                data TEXT NOT NULL,
-                PRIMARY KEY ("Date", "DateTime")
+        for table_name in _SQL_TABLES.values():
+            connection.execute(
+                f"""
+                CREATE TABLE IF NOT EXISTS {table_name} (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp DATETIME NOT NULL,
+                    data TEXT NOT NULL
+                )
+                """
             )
-            """
-        )
-        connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS archive_records (
-                "DateTime" TEXT PRIMARY KEY NOT NULL,
-                data TEXT NOT NULL
+            connection.execute(
+                f"CREATE INDEX IF NOT EXISTS idx_{table_name}_timestamp "
+                f"ON {table_name} (timestamp DESC)"
             )
-            """
-        )
-        connection.execute(
-            'CREATE INDEX IF NOT EXISTS idx_main_date_hour_datetime '
-            'ON main_records ("Date", "Hour", "DateTime" DESC)'
-        )
-        connection.execute(
-            "CREATE INDEX IF NOT EXISTS idx_main_ttl "
-            "ON main_records (ttl) WHERE ttl IS NOT NULL"
-        )
         connection.commit()
     finally:
         connection.close()
@@ -111,22 +94,29 @@ def purge_expired_records() -> int:
     table = get_table("main")
     with _connection(table) as connection:
         cursor = connection.execute(
-            "DELETE FROM main_records WHERE ttl IS NOT NULL AND ttl <= ?",
-            (int(time.time()),),
+            "DELETE FROM main_records WHERE timestamp <= ?",
+            (_format_timestamp(datetime.now(pytz.utc) - timedelta(days=7)),),
         )
         return cursor.rowcount
 
 
 def get_dates() -> dict[str, str]:
-    """Return the date partitions used by the collector and status queries."""
+    """Return collection and query-window timestamps in UTC."""
     now = datetime.now(pytz.utc)
+    recent_start = (now - timedelta(days=1)).replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+    hour_24_ago = now - timedelta(days=1)
+    hour_24_ago_start = hour_24_ago.replace(minute=0, second=0, microsecond=0)
 
     return {
-        "date": now.strftime("%Y-%m-%d"),
-        "datetime": now.strftime("%Y-%m-%dT%H:%M:%S %Z"),
-        "hour": now.strftime("%Y%m%d%H"),
-        "yesterday": (now - timedelta(days=1)).strftime("%Y-%m-%d"),
-        "hour_yesterday": (now - timedelta(days=1)).strftime("%Y%m%d%H"),
+        "timestamp": _format_timestamp(now),
+        "recent_start": _format_timestamp(recent_start),
+        "hour_24_start": _format_timestamp(hour_24_ago_start),
+        "hour_24_end": _format_timestamp(hour_24_ago_start + timedelta(hours=1)),
     }
 
 
@@ -138,38 +128,16 @@ def _json_default(value: object) -> int | float:
     raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
 
 
-def put_item(table: SQLiteTable, data: dict) -> None:
-    """Insert or replace a record identified by the table's primary key."""
+def put_item(table: SQLiteTable, data: dict, timestamp: str) -> None:
+    """Insert a record with its collection timestamp."""
     payload = json.dumps(data, default=_json_default, separators=(",", ":"))
 
     with _connection(table) as connection:
-        if table.name == "main":
-            connection.execute(
-                """
-                INSERT INTO main_records ("Date", "DateTime", "Hour", ttl, data)
-                VALUES (?, ?, ?, ?, ?)
-                ON CONFLICT ("Date", "DateTime") DO UPDATE SET
-                    "Hour" = excluded."Hour",
-                    ttl = excluded.ttl,
-                    data = excluded.data
-                """,
-                (
-                    data["Date"],
-                    data["DateTime"],
-                    data.get("Hour"),
-                    int(data["ttl"]) if data.get("ttl") is not None else None,
-                    payload,
-                ),
-            )
-        else:
-            connection.execute(
-                """
-                INSERT INTO archive_records ("DateTime", data)
-                VALUES (?, ?)
-                ON CONFLICT ("DateTime") DO UPDATE SET data = excluded.data
-                """,
-                (data["DateTime"], payload),
-            )
+        table_name = _SQL_TABLES[table.name]
+        connection.execute(
+            f"INSERT INTO {table_name} (timestamp, data) VALUES (?, ?)",
+            (timestamp, payload),
+        )
 
 
 def get_items(
@@ -178,7 +146,7 @@ def get_items(
     value: str,
     limit: int = 100,
 ) -> list[dict]:
-    """Return matching rows in descending DateTime order."""
+    """Return matching rows in descending timestamp order."""
     column = _QUERY_COLUMNS[table.name].get(key)
     if column is None:
         raise ValueError(f"Unsupported query key for {table.name} table: {key}")
@@ -187,28 +155,23 @@ def get_items(
 
     with _connection(table) as connection:
         table_name = _SQL_TABLES[table.name]
-        if table.name == "main":
-            rows = connection.execute(
-                f"""
-                SELECT data FROM {table_name}
-                WHERE {column} = ? AND (ttl IS NULL OR ttl > ?)
-                ORDER BY "DateTime" DESC
-                LIMIT ?
-                """,
-                (value, int(time.time()), limit),
-            ).fetchall()
-        else:
-            rows = connection.execute(
-                f"""
-                SELECT data FROM {table_name}
-                WHERE {column} = ?
-                ORDER BY "DateTime" DESC
-                LIMIT ?
-                """,
-                (value, limit),
-            ).fetchall()
+        rows = connection.execute(
+            f"""
+            SELECT timestamp, data FROM {table_name}
+            WHERE {column} = ?
+            ORDER BY timestamp DESC, id DESC
+            LIMIT ?
+            """,
+            (value, limit),
+        ).fetchall()
 
-    return [json.loads(row[0]) for row in rows]
+    return [_decode_row(row) for row in rows]
+
+
+def _decode_row(row: tuple[str, str]) -> dict:
+    data = json.loads(row[1])
+    data["timestamp"] = row[0]
+    return data
 
 
 def sort_humanized_dict(item):
@@ -231,13 +194,22 @@ def get_items_recent(
     dates: dict[str, str],
     limit: int = 1,
 ) -> list[dict]:
-    retval = get_items(table, "Date", dates["date"], limit=limit)
+    if limit < 0:
+        raise ValueError("limit must not be negative")
 
-    if len(retval) < limit:
-        remaining = limit - len(retval)
-        retval += get_items(table, "Date", dates["yesterday"], limit=remaining)
+    with _connection(table) as connection:
+        table_name = _SQL_TABLES[table.name]
+        rows = connection.execute(
+            f"""
+            SELECT timestamp, data FROM {table_name}
+            WHERE timestamp >= ? AND timestamp <= ?
+            ORDER BY timestamp DESC, id DESC
+            LIMIT ?
+            """,
+            (dates["recent_start"], dates["timestamp"], limit),
+        ).fetchall()
 
-    return retval
+    return [_decode_row(row) for row in rows]
 
 
 def convert_decimals_to_ints(data: dict) -> dict:
@@ -253,8 +225,8 @@ def convert_decimals_to_ints(data: dict) -> dict:
 
 def get_item_24hours_ago(
     table: SQLiteTable,
-    date_yesterday: str,
-    hour_yesterday: str,
+    hour_24_start: str,
+    hour_24_end: str,
 ) -> dict | list:
     if table.name != "main":
         raise ValueError("24-hour lookup is only supported for the main table")
@@ -262,18 +234,18 @@ def get_item_24hours_ago(
     with _connection(table) as connection:
         row = connection.execute(
             """
-            SELECT data FROM main_records
-            WHERE "Date" = ? AND "Hour" = ? AND (ttl IS NULL OR ttl > ?)
-            ORDER BY "DateTime" DESC
+            SELECT timestamp, data FROM main_records
+            WHERE timestamp >= ? AND timestamp < ?
+            ORDER BY timestamp DESC, id DESC
             LIMIT 1
             """,
-            (date_yesterday, hour_yesterday, int(time.time())),
+            (hour_24_start, hour_24_end),
         ).fetchone()
 
     if row is None:
         return []
 
-    item = json.loads(row[0])
+    item = _decode_row(row)
     if "humanized" in item:
         return []
     return item

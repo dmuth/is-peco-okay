@@ -25,11 +25,23 @@ export SQLITE_DATABASE_PATH="$HOME/.local/share/peco-outages.sqlite3"
 uv run uvicorn api.main:app --reload
 
 # Fetch the latest data and store it in SQLite.
-uv run python -m api.cron
+while true
+do
+    uv run python -m api.cron
+    sleep 60
+done
 
 # Delete expired records from SQLite.
 uv run python -m api.purge
+
+# Test endpoints
+curl localhost:8000/peco/
+curl localhost:8000/peco/recent
 ```
+
+The SQLite database stores each record's UTC collection time in a `timestamp`
+column and assigns an auto-incrementing `id`. Main status records are removed
+after seven days by the purge command; raw archive records are retained.
 
 Schedule the collector and cleanup commands with the host's scheduler.
 

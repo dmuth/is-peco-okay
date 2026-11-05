@@ -1,7 +1,5 @@
 
 
-import time
-
 from .lib import db, peco
 
 
@@ -18,12 +16,6 @@ def main():
     stats, url = peco.get_stats()
 
     data = {}
-
-    # The dates are our partition and sort keys
-    data["Date"] = dates["date"]
-    data["DateTime"] = dates["datetime"]
-    # The hour is for our secondary Index
-    data["Hour"] = dates["hour"]
 
     # Note the time that PECO puton the update
     data["PecoDateTime"] = stats["date"]
@@ -52,28 +44,20 @@ def main():
                 return(None)
 
     #
-    # Calculate our TTL for 7 days in the future.
-    #
-    ttl = 7 * 24 * 60 * 60 
-    data["ttl"] = int(time.time() + ttl)
-
-    #
     # Finally, write the latest status record.
     #
-    db.put_item(table, data)
+    db.put_item(table, data, dates["timestamp"])
 
     #
     # Before we wrap up, let's write the raw stats to our archive table.
     #
     table = db.get_table("archive")
     data = {}
-    data["DateTime"] = dates["datetime"]
     data["url"] = url
     data["stats"] = stats
 
-    db.put_item(table, data)
+    db.put_item(table, data, dates["timestamp"])
 
 
 if __name__ == "__main__":
     main()
-

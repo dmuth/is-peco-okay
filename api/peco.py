@@ -94,8 +94,8 @@ def get_status_recent(num: str | None = None) -> dict | PlainTextResponse:
 
             data["debug"] = {}
             data["debug"]["len"] = len(items)
-            data["debug"]["start"] = data["recent"][0]["DateTime"]
-            data["debug"]["end"] = data["recent"][-1]["DateTime"]
+            data["debug"]["start"] = data["recent"][0]["timestamp"]
+            data["debug"]["end"] = data["recent"][-1]["timestamp"]
             return data
 
         else:
@@ -134,7 +134,11 @@ def _get_trends(table, dates, data):
         #
         # If we don't have 24 hours worth of data, fetch that row explicitly.
         #
-        tmp = db.get_item_24hours_ago(table, dates["yesterday"], dates["hour_yesterday"])
+        tmp = db.get_item_24hours_ago(
+            table,
+            dates["hour_24_start"],
+            dates["hour_24_end"],
+        )
 
     if len(tmp):
         hours_ago_24 = db.convert_decimals_to_ints(tmp)
