@@ -8,8 +8,10 @@ View on the web at [https://www.IsPecoOkay.com/](https://www.ispecookay.com/).
 
 ### Setup
 
+The default development interpreter is Python 3.14, selected by `.python-version`.
+
 ``` bash
-# Set up the Python environment from pyproject.toml and uv.lock.
+# Set up the Python 3.14 environment from pyproject.toml and uv.lock.
 uv sync
 ```
 
