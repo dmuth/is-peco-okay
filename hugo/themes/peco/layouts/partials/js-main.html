@@ -35,5 +35,5 @@
 */}}
 {{ $scripts := slice $js_main $js_current $js_graph $js_debug | resources.Concat $filename | minify | fingerprint  }}
 
-<script type="text/javascript" src="{{ $scripts.RelPermalink }}" integrity="{{ $scripts.Data.Integrity }}" media="screen" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script defer type="text/javascript" src="{{ $scripts.RelPermalink }}" integrity="{{ $scripts.Data.Integrity }}" media="screen" crossorigin="anonymous"></script>
