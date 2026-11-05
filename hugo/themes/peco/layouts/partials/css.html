@@ -17,7 +17,6 @@
 
 {{ $filename := printf "sass/%s.css" $timehash }}
 
-{{ $style := slice $css_main $css_mobile | resources.Concat $filename | resources.ToCSS | minify | fingerprint  }}
+{{ $style := slice $css_main $css_mobile | resources.Concat $filename | css.Sass | minify | fingerprint  }}
 
-<link rel="stylesheet" href="{{ $style.Permalink }}">
-
+<link rel="stylesheet" href="{{ $style.RelPermalink }}">

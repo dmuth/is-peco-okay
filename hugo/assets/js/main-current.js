@@ -8,8 +8,8 @@ function fetchCurrent() {
     return new Promise((resolve) => {
 
     let hours = getNumHours();
-    let num_readings = hours * 6;
-    const url = `${window.api_endpoint_base}/peco/recent?num=${num_readings}`;
+    let seconds = hours * 3600;
+    const url = `/peco/recent?seconds=${seconds}`;
 
     fetchWithTimeout(url).then(response => {
 
@@ -218,8 +218,8 @@ function getNumHours() {
 
         if (hours < 3) {
             hours = 3;
-        } else if (hours > 24) {
-            hours = 24;
+        } else if (hours > 168) {
+            hours = 168;
         } else if (isNaN(hours)) {
             hours = 3;
         }
@@ -229,5 +229,3 @@ function getNumHours() {
     return(hours);
 
 } // End of getNumHours()
-
-

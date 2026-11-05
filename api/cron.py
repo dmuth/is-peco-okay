@@ -1,17 +1,15 @@
+import logging
+
+from .lib import db, peco
 
 
-import json
-from decimal import Decimal
-import time
-
-import lib.db as db
-import lib.peco as peco
+logger = logging.getLogger(__name__)
 
 
 #
 # Our entrypoint to the cron functionality.
 #
-def main(event, context):
+def main():
 
     #
     # Grab our table client, dates, and stats.
@@ -21,12 +19,6 @@ def main(event, context):
     stats, url = peco.get_stats()
 
     data = {}
-
-    # The dates are our partition and sort keys
-    data["Date"] = dates["date"]
-    data["DateTime"] = dates["datetime"]
-    # The hour is for our secondary Index
-    data["Hour"] = dates["hour"]
 
     # Note the time that PECO puton the update
     data["PecoDateTime"] = stats["date"]
@@ -45,45 +37,36 @@ def main(event, context):
     # Grab our most recent record, and if the time of the result from PECO matches, 
     # don't enter this since it would just be a duplicate.
     #
-    recent = db.get_items_recent(table, dates, 1)
-    
-    if len(recent) > 0:
-        row = recent[0]
-        if "PecoDateTime" in row:
-            if row["PecoDateTime"] == data["PecoDateTime"]:
-                print(f"PecoDateTime of {row['PecoDateTime']} matches. This result is not new, stopping now.")
-                return(None)
+    recent = db.get_latest_item(table)
+
+    if recent is not None and recent.get("PecoDateTime") == data["PecoDateTime"]:
+        logger.info(
+            "PecoDateTime of %s matches. This result is not new, stopping now.",
+            recent["PecoDateTime"],
+        )
+        return None
+
+    logger.info(f"Got result from PECO: {data}")
 
     #
-    # Calculate our TTL for 7 days in the future.
+    # Finally, write the latest status record.
     #
-    ttl = 7 * 24 * 60 * 60 
-    data["ttl"] = int(time.time() + ttl)
-
-    #
-    # Finally, write everything to the main DynamoDB table.
-    #
-    #print("DEBUG CRON", json.dumps(data, indent = 2)) # Debugging
-    db.put_item(table, data)
+    db.put_item(table, data, dates["timestamp"])
 
     #
     # Before we wrap up, let's write the raw stats to our archive table.
     #
     table = db.get_table("archive")
     data = {}
-    data["DateTime"] = dates["datetime"]
     data["url"] = url
     data["stats"] = stats
 
-    #
-    # DynamoDB doesn't like floating points, so we need to convert them to Decimals.
-    # But we're casting them as string first, otherwise we'll wind up with insane
-    # approximated values like 99.99000000001, etc.
-    #
-    for key, value in data["stats"].items():
-        if isinstance(value, float):
-            data["stats"][key] = Decimal(str(value))
-
-    db.put_item(table, data)
+    db.put_item(table, data, dates["timestamp"])
 
 
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s: %(message)s",
+    )
+    main()
