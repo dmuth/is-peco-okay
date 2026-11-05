@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from api import cron
+from api import cron, purge
 from api.lib import db
 
 
@@ -117,6 +117,33 @@ class DatabaseSchemaTests(unittest.TestCase):
         self.assertNotIn("Hour", main_payload)
         self.assertNotIn("ttl", main_payload)
         self.assertNotIn("DateTime", archive_payload)
+
+    def test_purge_logs_removed_record_count(self) -> None:
+        with self.assertLogs("api.purge", level="INFO") as captured:
+            removed = purge.main()
+
+        self.assertEqual(removed, 0)
+        self.assertIn("Removed 0 expired records.", captured.output[0])
+
+    def test_collector_logs_when_latest_result_is_a_duplicate(self) -> None:
+        table = db.get_table("main")
+        existing_date = "2026-11-04T12:00:00Z"
+        db.put_item(table, {"PecoDateTime": existing_date}, db.get_dates()["timestamp"])
+        stats = {
+            "date": existing_date,
+            "total_customers": 100,
+            "total_customers_outage": 2,
+            "total_outages": 1,
+        }
+
+        with patch.object(cron.peco, "get_stats", return_value=(stats, "")):
+            with self.assertLogs("api.cron", level="INFO") as captured:
+                cron.main()
+
+        self.assertIn(
+            f"PecoDateTime of {existing_date} matches. This result is not new, stopping now.",
+            captured.output[0],
+        )
 
 
 if __name__ == "__main__":

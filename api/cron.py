@@ -1,6 +1,9 @@
-
+import logging
 
 from .lib import db, peco
+
+
+logger = logging.getLogger(__name__)
 
 
 #
@@ -40,8 +43,13 @@ def main():
         row = recent[0]
         if "PecoDateTime" in row:
             if row["PecoDateTime"] == data["PecoDateTime"]:
-                print(f"PecoDateTime of {row['PecoDateTime']} matches. This result is not new, stopping now.")
+                logger.info(
+                    "PecoDateTime of %s matches. This result is not new, stopping now.",
+                    row["PecoDateTime"],
+                )
                 return(None)
+
+    logger.info(f"Got result from PECO: {data}")
 
     #
     # Finally, write the latest status record.
@@ -60,4 +68,8 @@ def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s: %(message)s",
+    )
     main()
