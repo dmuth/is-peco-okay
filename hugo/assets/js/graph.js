@@ -23,6 +23,7 @@ function formatDateTimeGraph(datetime) {
 */
 function updateGraphProcessData(data_in) {
 
+    var pointRadius = data_in.length > 300 ? 0 : 3;
     var data = {
         labels: [],
         datasets: [
@@ -32,7 +33,8 @@ function updateGraphProcessData(data_in) {
             borderColor: "blue",
             borderWidth: 3,
             pointStyle: "circle",
-            pointRadius: 3,
+            pointRadius: pointRadius,
+            pointHoverRadius: 3,
             pointBorderColor: "blue",
             pointBackgroundColor: "blue",
             yAxisID: 'y',
@@ -43,7 +45,8 @@ function updateGraphProcessData(data_in) {
             borderColor: "red",
             borderWidth: 3,
             pointStyle: "circle",
-            pointRadius: 3,
+            pointRadius: pointRadius,
+            pointHoverRadius: 3,
             pointBorderColor: "red",
             pointBackgroundColor: "red",
             yAxisID: 'y2',
@@ -139,11 +142,35 @@ function updateGraphGetOptions(data) {
 
 
 /**
+* Size the desktop graph to leave room for the content beneath it.
+*/
+function updateGraphHeight() {
+
+    var container = document.getElementById("peco-status-recent-graph-container");
+
+    if (window.innerWidth <= 1024) {
+        container.style.height = "";
+        return;
+    }
+
+    var graphRect = container.getBoundingClientRect();
+    var contentBelowGraph = document.body.scrollHeight - window.scrollY - graphRect.bottom;
+    var availableHeight = window.innerHeight - graphRect.top - contentBelowGraph - 16;
+
+    container.style.height = `${Math.max(320, Math.floor(availableHeight))}px`;
+
+} // End of updateGraphHeight()
+
+
+/**
 * Return a callback that will update our graph.
 */
 function updateGraphCallbackFactory(data, options) {
 
     return(function() {
+
+    updateGraphHeight();
+    options.maintainAspectRatio = window.innerWidth <= 1024;
 
     //
     // We're saving the chart as a global, as we'll need to call destroy() on it
@@ -203,6 +230,3 @@ function updateGraph(data_in) {
     window.addEventListener('resize', handleResizeCallback);
 
 } // End of updateGraph()
-
-
-

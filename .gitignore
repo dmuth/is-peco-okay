@@ -1,4 +1,7 @@
 
+# Steve Jobs
+.DS_Store
+
 *~
 *.swp
 
@@ -18,20 +21,16 @@ var/
 .installed.cfg
 *.egg
 
-# Serverless directories
-.serverless
-
-# Things added by Serverless
 __pycache__
-node_modules
-package-lock.json
-s_*.py         
 
+
+env
 
 # Vim
 *.swp
 *~
 
-# Steve Jobs
-.DS_Store
 
+db.sqlite
+db.sqlite.backup* 
+db.sqlite.restore*

@@ -1,0 +1,9 @@
+.git
+.venv
+.pytest_cache
+__pycache__
+*.py[cod]
+db.sqlite*
+hugo/resources/
+hugo/.hugo_build.lock
+.DS_Store

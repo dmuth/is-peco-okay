@@ -3,8 +3,8 @@ name = "peco-outage-stats"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
-    "boto3>=1,<2",
+    "fastapi>=0.162.0",
     "pytz==2024.1",
     "requests==2.31.0",
-    "urllib3<2",
+    "uvicorn>=0.54.0",
 ]
