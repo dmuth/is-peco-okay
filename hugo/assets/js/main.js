@@ -2,8 +2,6 @@
 * This Javascript is for our main page.
 */
 
-console.log("Our environment: {{ .env }}");
-
 /**
 * Fade in an element.
 *
@@ -97,5 +95,4 @@ fetchCurrent().then(result => {
     console.log(`Caught top-level error: ${error}`);
 
 });
-
 

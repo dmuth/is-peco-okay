@@ -31,16 +31,9 @@
 {{ $filename := printf "js/%s.js" $timehash }}
 
 {{/* 
-    Now set $templateData to a dictionary, then process the main Javascript file as a template. 
-*/}}
-{{ $templateData := dict 
-    "env" .Site.Params.Env }}
-{{ $js_main_parsed := $js_main | resources.ExecuteAsTemplate $filename $templateData }}
-
-{{/* 
     Finally, concatenate each of those Javascript files into a single file.
 */}}
-{{ $scripts := slice $js_main_parsed $js_current $js_graph $js_debug | resources.Concat $filename | minify | fingerprint  }}
+{{ $scripts := slice $js_main $js_current $js_graph $js_debug | resources.Concat $filename | minify | fingerprint  }}
 
 <script type="text/javascript" src="{{ $scripts.RelPermalink }}" integrity="{{ $scripts.Data.Integrity }}" media="screen" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
