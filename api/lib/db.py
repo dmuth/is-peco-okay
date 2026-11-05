@@ -1,175 +1,279 @@
+"""SQLite persistence for outage status and raw PECO archive records."""
 
-#
-# Module for interacting with DynamoDB.
-#
-
+from contextlib import contextmanager
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from decimal import Decimal
+import json
 import os
+from pathlib import Path
+import sqlite3
+import time
+from typing import Generator, Literal
 
-import boto3
-from boto3.dynamodb.conditions import Key
 import pytz
 
 
-
-#
-# Return an object for the DynamoDB Table
-#
-# key - Used to determine which table to return.
-#
-def get_table(key):
-
-    if key == "main":
-        table_name = os.environ["DYNAMO_TABLE_NAME"]
-    elif key == "archive":
-        table_name = os.environ["DYNAMO_TABLE_NAME_ARCHIVE"]
-    else:
-        raise Exception(f"Unknown key for DynamoDB table: {key}")
-
-    dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table(table_name)
-
-    return(table)
+TableName = Literal["main", "archive"]
+DEFAULT_DATABASE_PATH = "peco-outages.sqlite3"
 
 
-#
-# Get relevant dates all at once.
-#
-def get_dates():
+@dataclass(frozen=True)
+class SQLiteTable:
+    name: TableName
+    database_path: Path
 
-    retval = {}
 
+_SQL_TABLES = {
+    "main": "main_records",
+    "archive": "archive_records",
+}
+
+_QUERY_COLUMNS = {
+    "main": {
+        "Date": '"Date"',
+        "DateTime": '"DateTime"',
+        "Hour": '"Hour"',
+    },
+    "archive": {
+        "DateTime": '"DateTime"',
+    },
+}
+
+
+def _database_path() -> Path:
+    return Path(os.environ.get("SQLITE_DATABASE_PATH", DEFAULT_DATABASE_PATH)).expanduser()
+
+
+def _initialize_database(database_path: Path) -> None:
+    database_path.parent.mkdir(parents=True, exist_ok=True)
+    connection = sqlite3.connect(database_path, timeout=30)
+    try:
+        connection.execute("PRAGMA journal_mode = WAL")
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS main_records (
+                "Date" TEXT NOT NULL,
+                "DateTime" TEXT NOT NULL,
+                "Hour" TEXT,
+                ttl INTEGER,
+                data TEXT NOT NULL,
+                PRIMARY KEY ("Date", "DateTime")
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS archive_records (
+                "DateTime" TEXT PRIMARY KEY NOT NULL,
+                data TEXT NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            'CREATE INDEX IF NOT EXISTS idx_main_date_hour_datetime '
+            'ON main_records ("Date", "Hour", "DateTime" DESC)'
+        )
+        connection.execute(
+            "CREATE INDEX IF NOT EXISTS idx_main_ttl "
+            "ON main_records (ttl) WHERE ttl IS NOT NULL"
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+
+def get_table(key: TableName) -> SQLiteTable:
+    """Return a handle for the main or archive table, creating storage if needed."""
+    if key not in _SQL_TABLES:
+        raise ValueError(f"Unknown key for SQLite table: {key}")
+
+    database_path = _database_path()
+    _initialize_database(database_path)
+    return SQLiteTable(name=key, database_path=database_path)
+
+
+@contextmanager
+def _connection(table: SQLiteTable) -> Generator[sqlite3.Connection, None, None]:
+    connection = sqlite3.connect(table.database_path, timeout=30)
+    try:
+        yield connection
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+
+def purge_expired_records() -> int:
+    """Delete expired main records and return the number of rows removed."""
+    table = get_table("main")
+    with _connection(table) as connection:
+        cursor = connection.execute(
+            "DELETE FROM main_records WHERE ttl IS NOT NULL AND ttl <= ?",
+            (int(time.time()),),
+        )
+        return cursor.rowcount
+
+
+def get_dates() -> dict[str, str]:
+    """Return the date partitions used by the collector and status queries."""
     now = datetime.now(pytz.utc)
 
-    retval["date"] = now.strftime('%Y-%m-%d')
-    retval["datetime"] = now.strftime('%Y-%m-%dT%H:%M:%S %Z')
-    retval["hour"] = now.strftime('%Y%m%d%H')
-    yesterday = now - timedelta(days=1)
-    retval["yesterday"] = yesterday.strftime('%Y-%m-%d')
-    retval["hour_yesterday"] = yesterday.strftime('%Y%m%d%H')
-
-    return(retval)
-
-
-#
-# Put an item in the DynamoDB table
-#
-def put_item(table, data):
-    retval = table.put_item(Item = data)
-    return(retval)
+    return {
+        "date": now.strftime("%Y-%m-%d"),
+        "datetime": now.strftime("%Y-%m-%dT%H:%M:%S %Z"),
+        "hour": now.strftime("%Y%m%d%H"),
+        "yesterday": (now - timedelta(days=1)).strftime("%Y-%m-%d"),
+        "hour_yesterday": (now - timedelta(days=1)).strftime("%Y%m%d%H"),
+    }
 
 
-#
-# Retrieve all items that match the supplied key.
-# Items will be returned in reverse order.
-#
-def get_items(table, key, value, limit = 100):
-
-    retval = {}
-
-    items = table.query(
-        KeyConditionExpression = Key(key).eq(value),
-        ConsistentRead = False,
-        ScanIndexForward = False,
-        Limit = limit
-        )
-
-    if "Items" in items:
-        retval = items["Items"]
-    #del items["Items"]; print("DEBUG Items", key, items) # Debugging
-    #print("DEBUG Response size:", table, key, value, items["ResponseMetadata"]["HTTPHeaders"]["content-length"]) # Debugging
-
-    return(retval)
+def _json_default(value: object) -> int | float:
+    if isinstance(value, Decimal):
+        if value.as_tuple().exponent:
+            return float(value)
+        return int(value)
+    raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
 
 
-#
-# Fields come out of DyanmoDB in arbitrary order, and I would like to sort
-# the humanized dic for easier consumption by humans.
-#
+def put_item(table: SQLiteTable, data: dict) -> None:
+    """Insert or replace a record identified by the table's primary key."""
+    payload = json.dumps(data, default=_json_default, separators=(",", ":"))
+
+    with _connection(table) as connection:
+        if table.name == "main":
+            connection.execute(
+                """
+                INSERT INTO main_records ("Date", "DateTime", "Hour", ttl, data)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT ("Date", "DateTime") DO UPDATE SET
+                    "Hour" = excluded."Hour",
+                    ttl = excluded.ttl,
+                    data = excluded.data
+                """,
+                (
+                    data["Date"],
+                    data["DateTime"],
+                    data.get("Hour"),
+                    int(data["ttl"]) if data.get("ttl") is not None else None,
+                    payload,
+                ),
+            )
+        else:
+            connection.execute(
+                """
+                INSERT INTO archive_records ("DateTime", data)
+                VALUES (?, ?)
+                ON CONFLICT ("DateTime") DO UPDATE SET data = excluded.data
+                """,
+                (data["DateTime"], payload),
+            )
+
+
+def get_items(
+    table: SQLiteTable,
+    key: str,
+    value: str,
+    limit: int = 100,
+) -> list[dict]:
+    """Return matching rows in descending DateTime order."""
+    column = _QUERY_COLUMNS[table.name].get(key)
+    if column is None:
+        raise ValueError(f"Unsupported query key for {table.name} table: {key}")
+    if limit < 0:
+        raise ValueError("limit must not be negative")
+
+    with _connection(table) as connection:
+        table_name = _SQL_TABLES[table.name]
+        if table.name == "main":
+            rows = connection.execute(
+                f"""
+                SELECT data FROM {table_name}
+                WHERE {column} = ? AND (ttl IS NULL OR ttl > ?)
+                ORDER BY "DateTime" DESC
+                LIMIT ?
+                """,
+                (value, int(time.time()), limit),
+            ).fetchall()
+        else:
+            rows = connection.execute(
+                f"""
+                SELECT data FROM {table_name}
+                WHERE {column} = ?
+                ORDER BY "DateTime" DESC
+                LIMIT ?
+                """,
+                (value, limit),
+            ).fetchall()
+
+    return [json.loads(row[0]) for row in rows]
+
+
 def sort_humanized_dict(item):
-
     if item == "datetime":
-        return(0, item)
+        return (0, item)
     elif item == "customers":
-        return(1, item)
+        return (1, item)
     elif item == "customers_outages":
-        return(2, item)
+        return (2, item)
     elif item == "outages":
-        return(3, item)
+        return (3, item)
     elif item == "customers_active_percent":
-        return(4, item)
+        return (4, item)
 
-    return(99, item)
+    return (99, item)
 
 
-#
-# Get recent items.
-# 
-def get_items_recent(table, dates, limit = 1):
+def get_items_recent(
+    table: SQLiteTable,
+    dates: dict[str, str],
+    limit: int = 1,
+) -> list[dict]:
+    retval = get_items(table, "Date", dates["date"], limit=limit)
 
-    data = {
-        "Date": dates["date"],
-        "DateTime": dates["datetime"],
-        }
-
-    retval = get_items(table, "Date", data["Date"], limit = limit)
-    #retval = retval[:9] # Debugging - force an incomplete fetch for today
-
-    #
-    # If we didn't fetch enough items, we're probably at the start of the day.
-    # Try fetching more items from yesterday.
-    #
     if len(retval) < limit:
-        new_limit = limit - len(retval)
-        data["Date"] = dates["yesterday"]
-        #print(f"DEBUG: Only fetched {len(retval)} items, fetching {new_limit} more from yesterday ({data['Date']})")
-        retval += get_items(table, "Date", data["Date"], limit = new_limit)
+        remaining = limit - len(retval)
+        retval += get_items(table, "Date", dates["yesterday"], limit=remaining)
 
-    return(retval)
+    return retval
 
 
-#
-# Convert all decimal types in this dict to floats or integers.
-#
-# They needed to be stored in DynamoDB as Decimal types (or at least Boto required it),
-# but we'd like them as floats or ints in Python for my own sanity.
-#
-def convert_decimals_to_ints(data):
-
+def convert_decimals_to_ints(data: dict) -> dict:
     for key, value in data.items():
-
         if isinstance(value, Decimal):
             if value.as_tuple().exponent:
                 data[key] = float(value)
             else:
                 data[key] = int(value)
 
-    return(data)
+    return data
 
 
-#
-# Get an item from 24 hours ago.
-#
-def get_item_24hours_ago(table, date_yesterday, hour_yesterday):
+def get_item_24hours_ago(
+    table: SQLiteTable,
+    date_yesterday: str,
+    hour_yesterday: str,
+) -> dict | list:
+    if table.name != "main":
+        raise ValueError("24-hour lookup is only supported for the main table")
 
-    retval = []
+    with _connection(table) as connection:
+        row = connection.execute(
+            """
+            SELECT data FROM main_records
+            WHERE "Date" = ? AND "Hour" = ? AND (ttl IS NULL OR ttl > ?)
+            ORDER BY "DateTime" DESC
+            LIMIT 1
+            """,
+            (date_yesterday, hour_yesterday, int(time.time())),
+        ).fetchone()
 
-    items = table.query(
-        IndexName = "Hour",
-        KeyConditionExpression = 
-            Key("Date").eq(date_yesterday) & Key("Hour").eq(hour_yesterday),
-        ConsistentRead = False,
-        ScanIndexForward = False,
-        Limit = 1
-        )
+    if row is None:
+        return []
 
-    if "Items" in items:
-        # If we have an old-style row, don't return anything.
-        if len(items["Items"]):
-            if "humanized" in items["Items"][0]:
-                return(retval)
-            retval = items["Items"][0]
-
-    return(retval)
-
+    item = json.loads(row[0])
+    if "humanized" in item:
+        return []
+    return item

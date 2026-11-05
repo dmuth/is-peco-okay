@@ -1,107 +1,78 @@
 
-import json
+from fastapi import APIRouter
+from fastapi.responses import PlainTextResponse
 
-import requests
-
-import lib.peco as peco
-import lib.db as db
-import lib.trends as trends
-import lib.status as status
+from .lib import db, peco, status, trends
 
 
-#
-# Read the most recent record from DynamoDB
-#
-def get_status(event, context):
+router = APIRouter()
+
+
+@router.get("/peco", response_model=None)
+def get_status() -> dict | PlainTextResponse:
+    """Return the most recent saved status record."""
 
     table = db.get_table("main")
     dates = db.get_dates()
 
     items = db.get_items_recent(table, dates, limit = 1)
 
-    #print("Debugging", json.dumps(items, indent = 4))
-    #items[0] = False # Debugging
-    #items[0] = {} # Debugging
-    #items = False # Debugging
-
     if type(items) is list and len(items):
 
         if type(items[0]) is dict:
             stats = items[0]
-            stats = db.convert_decimals_to_ints(stats)
-            response = {"statusCode": 200, "body": json.dumps(stats, indent = 4)}
+            return db.convert_decimals_to_ints(stats)
 
         else:
             print(f"ERROR: Bad item: {items[0]}")
-            response = {"statusCode": 500, "body": "Item is not a dictonary."}
+            return PlainTextResponse("Item is not a dictonary.", status_code=500)
 
     else:
         print(f"ERROR: Bad repsonse: {items}")
-        response = {"statusCode": 500, "body": "Did not find any results from our database query."}
+        return PlainTextResponse(
+            "Did not find any results from our database query.",
+            status_code=500,
+        )
 
-    return(response)
 
+def parse_args_recent(num: str | None) -> int:
+    """Parse the optional recent-record count, preserving the existing limits."""
 
-#
-# Parse our arguments (only argument supported at this time is num),
-# do a sanity check, and return the value or raise an exception.
-#
-def parseArgsRecent(event):
-
-    retval = 6
-
-    if not "queryStringParameters" in event:
-        return(retval)
-
-    if not "num" in event["queryStringParameters"]:
-        return(retval)
-
-    num = int(event["queryStringParameters"]["num"])
+    if num is None:
+        return 6
+    num = int(num)
 
     if num < 0 or num > 144:
         error_string = f"Acceptable values are between 1 and 144, inclusive. {num} is out of bounds."
-        raise Exception(error_string)
+        raise ValueError(error_string)
 
-    retval = num
-    return(retval)
+    return num
 
 
-#
-# Read the most recent statuses from DynamoDB.
-# Default is 12 statuses (1 hour).
-# This function will dedupe multiple reads for the same timespan.
-#
-def get_status_recent(event, context):
+@router.get("/peco/recent", response_model=None)
+def get_status_recent(num: str | None = None) -> dict | PlainTextResponse:
+    """Return recent statuses and their calculated trends."""
 
     try:
-        num = parseArgsRecent(event)
+        num = parse_args_recent(num)
 
-    except Exception as e:
-        response = {"statusCode": 422, "body": str(e)}
-        return(response)
+    except ValueError as e:
+        return PlainTextResponse(str(e), status_code=422)
 
     table = db.get_table("main")
     dates = db.get_dates()
 
     items = db.get_items_recent(table, dates, limit = num)
 
-    #print("Debugging", json.dumps(items, indent = 4), len(items))
-    #print("Debugging", items, len(items))
-    #items[0] = False # Debugging
-    #items[0] = {} # Debugging
-    #items = False # Debugging
-
     if type(items) is list and len(items):
 
-        #
-        # Check to see if the first result the old style of data.  If it is,
-        # bail out, because we have nothing usable until cron runs.
-        #
         if type(items[0]) is dict:
             if "raw" in items[0]:
                 print(f"ERROR: First row has 'raw' key, which means it is in the old style and not usable.  Bailing out!")
-                response = {"statusCode": 500, "body": "First result was in old format and is unusable. Wait for cron to run."}
-                return(response)
+                return PlainTextResponse(
+                    "First result was in old format and is unusable. Wait for cron to run.",
+                    status_code=500,
+                )
 
         if type(items[0]) is dict:
 
@@ -115,42 +86,30 @@ def get_status_recent(event, context):
 
             data = {}
             data["current"] = stats[0]
-            data["recent"]= stats
+            data["recent"] = stats
 
             data["current"]["status"] = status.get_status("current", int(data["current"]["customers_outages"]))
 
             data["trends"] = _get_trends(table, dates, data)
 
-            #print("Debugging", json.dumps(data, indent = 4))
-            #print("Debug Trends", data["trends"])
-            #
-            # Dump in some debugging info here.
-            #
             data["debug"] = {}
             data["debug"]["len"] = len(items)
             data["debug"]["start"] = data["recent"][0]["DateTime"]
             data["debug"]["end"] = data["recent"][-1]["DateTime"]
-            #print(data["debug"], len(data["recent"])) # Debugging
-
-            response = {"statusCode": 200, "body": json.dumps(data, indent = 4)}
+            return data
 
         else:
             print(f"ERROR: Bad item: {items[0]}")
-            response = {"statusCode": 500, "body": "Item is not a dictonary."}
+            return PlainTextResponse("Item is not a dictonary.", status_code=500)
 
     else:
         print(f"ERROR: Bad repsonse: {items}")
-        response = {"statusCode": 500, "body": "Did not find any results from our database query."}
-        return(response)
-
-    #print(f"Debug num: {num}, limit: {limit}, num items: {len(items)}, unique_rows: {len(stats)}")
-
-    return(response)
+        return PlainTextResponse(
+            "Did not find any results from our database query.",
+            status_code=500,
+        )
 
 
-#
-# Get our trends.
-#
 def _get_trends(table, dates, data):
 
     retval = {}
@@ -194,9 +153,6 @@ def _get_trends(table, dates, data):
     return(retval)
 
 
-#
-# Sanitize our rows, removing old style rows.
-# 
 def _sanitize_rows(items):
 
     retval = []
@@ -211,21 +167,4 @@ def _sanitize_rows(items):
 
         retval.append(row)
 
-    #print("DEBUG", len(retval), retval)
-
     return(retval)
-
-
-#
-# Get the live status from PECO
-#
-def get_status_live(event, context):
-
-    stats, _ = peco.get_stats()
-
-    #print("DEBUG", stats) # Debugging
-    response = {"statusCode": 200, "body": json.dumps(stats, indent = 4)}
-
-    return(response)
-
-

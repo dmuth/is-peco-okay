@@ -1,17 +1,14 @@
 
 
-import json
-from decimal import Decimal
 import time
 
-import lib.db as db
-import lib.peco as peco
+from .lib import db, peco
 
 
 #
 # Our entrypoint to the cron functionality.
 #
-def main(event, context):
+def main():
 
     #
     # Grab our table client, dates, and stats.
@@ -61,9 +58,8 @@ def main(event, context):
     data["ttl"] = int(time.time() + ttl)
 
     #
-    # Finally, write everything to the main DynamoDB table.
+    # Finally, write the latest status record.
     #
-    #print("DEBUG CRON", json.dumps(data, indent = 2)) # Debugging
     db.put_item(table, data)
 
     #
@@ -75,15 +71,9 @@ def main(event, context):
     data["url"] = url
     data["stats"] = stats
 
-    #
-    # DynamoDB doesn't like floating points, so we need to convert them to Decimals.
-    # But we're casting them as string first, otherwise we'll wind up with insane
-    # approximated values like 99.99000000001, etc.
-    #
-    for key, value in data["stats"].items():
-        if isinstance(value, float):
-            data["stats"][key] = Decimal(str(value))
-
     db.put_item(table, data)
 
+
+if __name__ == "__main__":
+    main()
 

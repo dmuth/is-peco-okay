@@ -61,7 +61,7 @@ function build_html() {
 
 function s3sync() {
     echo "# Syncing up to S3 bucket..."
-    sls s3sync --stage ${ENV}
+    aws s3 sync hugo/public "s3://dmuth-peco-${ENV}/" --delete
 } # End of s3sync()
 
 
@@ -119,4 +119,3 @@ s3sync
 invalidate_cloudfront_cache
 
 echo "# Done!"
-

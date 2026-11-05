@@ -41,17 +41,12 @@ text-based website.  [Even my memes are text-based!](/robots.txt)
 
 ## What was the site built in?
 
-I used [Serverless](https://www.serverless.com/) and deployed on Amazon Web Services!
-
 The HTML, Javascript, and CSS are managed with [Hugo](https://gohugo.io/), which is an impressive
 static site generator.
 
-The back end consists of AWS Lambda to provide API endpoints, with the underlying code being
-written in Python.  The HTML is stored in an S3 bucket and served by CloudFront which performs
-SSL termination.  The data is stored in DynamoDB.
-
-For deplying APIs, Serverless is GREAT!  For DynamoDB tables, [it is a mixed bag](https://github.com/dmuth/is-peco-okay/blob/7f2f3af88c7ac40a14c63d3f9bcd021b2e58cff6/serverless.yml#L120).  I do NOT
-recommend Serverless for Cloudfront distributions.
+The backend is a Python application built with FastAPI. It stores outage history and raw
+source data in a local SQLite database. The static site is stored in an S3 bucket and served
+by CloudFront, which performs SSL termination.
 
 
 ## Did you really hand code all of the Javascript and CSS?
@@ -76,7 +71,7 @@ at lunch while eating hamburger hash with a spork.
 
 ## How the HECK did you get a default index.html working in a CloudFront Distribution?
 
-I used a Lambda@Edge function to add `index.html` as described [on this page](https://aws.amazon.com/blogs/networking-and-content-delivery/implementing-default-directory-indexes-in-amazon-s3-backed-amazon-cloudfront-origins-using-cloudfront-functions/).  
+I use a CloudFront Function to add `index.html` as described [on this page](https://aws.amazon.com/blogs/networking-and-content-delivery/implementing-default-directory-indexes-in-amazon-s3-backed-amazon-cloudfront-origins-using-cloudfront-functions/).
 
 It would be *really cool* if that functionality was built into CloudFront, Amazon.  Come on, Amazon, I know you can do it.  I believe in you.
 
@@ -128,4 +123,3 @@ Otherwise, you can find me [on the hellscape that is Twitter](https://twitter.co
 or drop me an email: **doug.muth AT gmail DOT com**.
 
 {{< bottom-padding >}}
-
