@@ -11,8 +11,13 @@ pushd $(dirname $0)/.. > /dev/null
 
 while true
 do
-    uv run python -m api.cron
-    uv run python -m api.purge
+    #
+    # If something like a timeout happens, don't let it kill the main loop.
+    #
+    uv run python -m api.cron 2>&1 || true
+    uv run python -m api.purge 2>&1 || true
+
     sleep 60
+
 done
 
