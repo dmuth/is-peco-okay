@@ -15,18 +15,8 @@
 #                                                         |___/                          
 #
 
-{{ if eq .Site.Params.Env "dev" }}
 #
-# Keep crawlers out of the dev site.
+# This site is intended for local use only.
 #
 User-agent: *
 Disallow: /
-{{ else }}
-#
-# Crawlers are welcome here!
-#
-User-agent: *
-Allow: /
-{{ end }}
-
-

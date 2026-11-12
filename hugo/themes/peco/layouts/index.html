@@ -2,8 +2,8 @@
 
 {{ define "main" }}
 
-{{/* Load our Javascript for main. */}}
-{{ partial "js-main.html" . }}
-
 {{ .Content }}
+
+{{/* Load our Javascript for main after the dashboard markup is available. */}}
+{{ partial "js-main.html" . }}
 {{ end }}

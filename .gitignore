@@ -18,15 +18,10 @@ var/
 .installed.cfg
 *.egg
 
-# Serverless directories
-.serverless
-
-# Things added by Serverless
 __pycache__
-node_modules
-package-lock.json
-s_*.py         
 
+
+env
 
 # Vim
 *.swp
@@ -34,4 +29,4 @@ s_*.py
 
 # Steve Jobs
 .DS_Store
-
+db.sqlite
