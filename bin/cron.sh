@@ -25,7 +25,7 @@ INTERVAL_CRON=60
 #INTERVAL_CRON=7 # Debugging
 INTERVAL_PURGE=3600
 #INTERVAL_PURGE=16 # Debugging
-INTERVAL_BACKUP=900
+INTERVAL_BACKUP=300
 #INTERVAL_BACKUP=30 # Debugging
 
 # Prime these values so that cron and purge run on the first loop
@@ -66,24 +66,7 @@ do
     if (( AGO >= INTERVAL_BACKUP )); then
         echo "# Last backup was ${AGO} seconds ago, running backup..."
         LAST_BACKUP=$SECONDS
-        if [[ -z "${SQLITE_DATABASE_PATH:-}" || "${PECO_BACKUPS_S3_PREFIX:-}" != s3://* ]]; then
-            echo "# Backup requires SQLITE_DATABASE_PATH and an S3 PECO_BACKUPS_S3_PREFIX." >&2
-        else
-            BACKUP_FILENAME="db-$(date -u +%Y%m%dT%H%M%S).gz"
-            BACKUP_PATH="./${BACKUP_FILENAME}"
-            BACKUP_DESTINATION="${PECO_BACKUPS_S3_PREFIX%/}/${BACKUP_FILENAME}"
-
-            if gzip -c "$SQLITE_DATABASE_PATH" > "$BACKUP_PATH"; then
-                if aws s3 cp "$BACKUP_PATH" "$BACKUP_DESTINATION"; then
-                    rm "$BACKUP_PATH"
-                else
-                    echo "# Backup upload failed; local backup retained at ${BACKUP_PATH}." >&2
-                fi
-            else
-                echo "# Backup compression failed." >&2
-                rm -f "$BACKUP_PATH"
-            fi
-        fi
+        ./bin/backup-db.sh 2>&1 || true
     else
         NEXT=$(($INTERVAL_BACKUP - $AGO))
         echo "# Last backup was ${AGO} seconds ago, next in ${NEXT} secs, skipping backup..."

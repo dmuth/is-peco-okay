@@ -26,28 +26,18 @@ uv run python -m unittest discover -s tests -v
 ### Actual Development
 
 ``` bash
-# Optional: choose where the SQLite database is stored. Defaults to
-# ./db.sqlite.
-export SQLITE_DATABASE_PATH="$HOME/.local/share/peco-outages.sqlite3"
 
-# Build the website, then run FastAPI. The site and API share port 8000.
+# Build the website
 ./bin/build-site.sh
-uv run uvicorn api.main:app --reload
 
-# Visit http://127.0.0.1:8000/ for the site.
-# API endpoints: http://127.0.0.1:8000/peco and /peco/recent?seconds=10800.
-# The recent endpoint returns all records from the requested seconds-long window
-# (up to 604800 seconds / seven days).
+# Run FastAPI. The site and API share port 8000.
+./bin/app-run.sh
 
-# Fetch the latest data and store it in SQLite.
-while true
-do
-    uv run python -m api.cron
-    sleep 60
-done
-
-# Delete expired records from SQLite.
-uv run python -m api.purge
+#
+# Start the cron script to fetch new records, purge old records, and
+# periodically backup the database.
+#
+./bin/cron.sh
 
 # Test the website and API
 curl localhost:8000/
