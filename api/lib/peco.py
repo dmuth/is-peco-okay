@@ -15,13 +15,15 @@ def get_stats():
     # static JSON file being served from S3.
     #
     url_1="https://kubra.io/stormcenter/api/v1/stormcenters/39e6d9f3-fdea-4539-848f-b8631945da6f/views/789577bd-d2c6-42b8-af4b-b51ae6f52b6c/currentState"
-    result = requests.get(url_1)
+    result = requests.get(url_1, timeout=30)
+    result.raise_for_status()
     #print(json.dumps(result.json(), indent = 4)) # Debugging
 
     url_fragment = result.json()["data"]["interval_generation_data"]
     url_2=f"https://kubra.io/{url_fragment}/public/summary-1/data.json"
     #print(url_2) # Debugging
-    result = requests.get(url_2)
+    result = requests.get(url_2, timeout=30)
+    result.raise_for_status()
 
     results = {}
     results["date"] = result.json()["summaryFileData"]["date_generated"]
@@ -40,6 +42,5 @@ def get_stats():
     response = results
 
     return(response, url_2)
-
 
 

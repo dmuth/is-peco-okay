@@ -1,202 +1,136 @@
 
-import json
+from fastapi import APIRouter
+from fastapi.responses import PlainTextResponse
 
-import requests
-
-import lib.peco as peco
-import lib.db as db
-import lib.trends as trends
-import lib.status as status
+from .lib import db, status, trends
 
 
-#
-# Read the most recent record from DynamoDB
-#
-def get_status(event, context):
+router = APIRouter()
+
+
+@router.get("/peco", response_model=None)
+def get_status() -> dict | PlainTextResponse:
+    """Return the most recent saved status record."""
 
     table = db.get_table("main")
-    dates = db.get_dates()
-
-    items = db.get_items_recent(table, dates, limit = 1)
-
-    #print("Debugging", json.dumps(items, indent = 4))
-    #items[0] = False # Debugging
-    #items[0] = {} # Debugging
-    #items = False # Debugging
-
-    if type(items) is list and len(items):
-
-        if type(items[0]) is dict:
-            stats = items[0]
-            stats = db.convert_decimals_to_ints(stats)
-            response = {"statusCode": 200, "body": json.dumps(stats, indent = 4)}
-
-        else:
-            print(f"ERROR: Bad item: {items[0]}")
-            response = {"statusCode": 500, "body": "Item is not a dictonary."}
-
-    else:
-        print(f"ERROR: Bad repsonse: {items}")
-        response = {"statusCode": 500, "body": "Did not find any results from our database query."}
-
-    return(response)
+    item = db.get_latest_item(table)
+    if item is None:
+        return PlainTextResponse(
+            "Did not find any results from our database query.",
+            status_code=500,
+        )
+    return db.convert_decimals_to_ints(item)
 
 
-#
-# Parse our arguments (only argument supported at this time is num),
-# do a sanity check, and return the value or raise an exception.
-#
-def parseArgsRecent(event):
+def parse_args_recent(seconds: str | None) -> int:
+    """Parse the requested history window, capped at the database retention period."""
 
-    retval = 6
+    if seconds is None:
+        return 3600
+    duration_seconds = int(seconds)
 
-    if not "queryStringParameters" in event:
-        return(retval)
+    if duration_seconds < 1 or duration_seconds > 604800:
+        error_string = f"Acceptable values are between 1 and 604800 seconds, inclusive. {duration_seconds} is out of bounds."
+        raise ValueError(error_string)
 
-    if not "num" in event["queryStringParameters"]:
-        return(retval)
-
-    num = int(event["queryStringParameters"]["num"])
-
-    if num < 0 or num > 144:
-        error_string = f"Acceptable values are between 1 and 144, inclusive. {num} is out of bounds."
-        raise Exception(error_string)
-
-    retval = num
-    return(retval)
+    return duration_seconds
 
 
-#
-# Read the most recent statuses from DynamoDB.
-# Default is 12 statuses (1 hour).
-# This function will dedupe multiple reads for the same timespan.
-#
-def get_status_recent(event, context):
+@router.get("/peco/recent", response_model=None)
+def get_status_recent(
+    seconds: str | None = None,
+    num: str | None = None,
+) -> dict | PlainTextResponse:
+    """Return recent statuses and their calculated trends."""
+
+    if num is not None:
+        return PlainTextResponse(
+            "The num parameter has been replaced by seconds.",
+            status_code=422,
+        )
 
     try:
-        num = parseArgsRecent(event)
+        duration_seconds = parse_args_recent(seconds)
 
-    except Exception as e:
-        response = {"statusCode": 422, "body": str(e)}
-        return(response)
+    except ValueError as e:
+        return PlainTextResponse(str(e), status_code=422)
 
     table = db.get_table("main")
     dates = db.get_dates()
-
-    items = db.get_items_recent(table, dates, limit = num)
-
-    #print("Debugging", json.dumps(items, indent = 4), len(items))
-    #print("Debugging", items, len(items))
-    #items[0] = False # Debugging
-    #items[0] = {} # Debugging
-    #items = False # Debugging
+    items = db.get_items_for_duration(
+        table,
+        int(dates["timestamp_us"]),
+        duration_seconds,
+    )
 
     if type(items) is list and len(items):
 
-        #
-        # Check to see if the first result the old style of data.  If it is,
-        # bail out, because we have nothing usable until cron runs.
-        #
         if type(items[0]) is dict:
             if "raw" in items[0]:
                 print(f"ERROR: First row has 'raw' key, which means it is in the old style and not usable.  Bailing out!")
-                response = {"statusCode": 500, "body": "First result was in old format and is unusable. Wait for cron to run."}
-                return(response)
+                return PlainTextResponse(
+                    "First result was in old format and is unusable. Wait for cron to run.",
+                    status_code=500,
+                )
 
         if type(items[0]) is dict:
 
             stats = _sanitize_rows(items)
 
-            #
-            # Sometimes we get an extra row, and we want to make sure that the number
-            # of rows we return is exactly what we ask for.
-            #
-            stats = stats[:num]
-
             data = {}
             data["current"] = stats[0]
-            data["recent"]= stats
+            data["recent"] = stats
 
             data["current"]["status"] = status.get_status("current", int(data["current"]["customers_outages"]))
 
-            data["trends"] = _get_trends(table, dates, data)
+            data["trends"] = _get_trends(table, data)
 
-            #print("Debugging", json.dumps(data, indent = 4))
-            #print("Debug Trends", data["trends"])
-            #
-            # Dump in some debugging info here.
-            #
             data["debug"] = {}
             data["debug"]["len"] = len(items)
-            data["debug"]["start"] = data["recent"][0]["DateTime"]
-            data["debug"]["end"] = data["recent"][-1]["DateTime"]
-            #print(data["debug"], len(data["recent"])) # Debugging
-
-            response = {"statusCode": 200, "body": json.dumps(data, indent = 4)}
+            data["debug"]["start"] = data["recent"][0]["timestamp"]
+            data["debug"]["end"] = data["recent"][-1]["timestamp"]
+            return data
 
         else:
             print(f"ERROR: Bad item: {items[0]}")
-            response = {"statusCode": 500, "body": "Item is not a dictonary."}
+            return PlainTextResponse("Item is not a dictonary.", status_code=500)
 
     else:
         print(f"ERROR: Bad repsonse: {items}")
-        response = {"statusCode": 500, "body": "Did not find any results from our database query."}
-        return(response)
-
-    #print(f"Debug num: {num}, limit: {limit}, num items: {len(items)}, unique_rows: {len(stats)}")
-
-    return(response)
+        return PlainTextResponse(
+            "Did not find any results from our database query.",
+            status_code=500,
+        )
 
 
-#
-# Get our trends.
-#
-def _get_trends(table, dates, data):
+def _get_trends(table, data):
 
     retval = {}
+    current = data["current"]
+    current_timestamp = db.parse_timestamp_microseconds(current["PecoDateTime"])
+    trend_periods = (
+        ("1hour", 1, 600),
+        ("3hour", 3, 1200),
+        ("24hour", 24, 600),
+    )
 
-    trend = trends.get_hourly_trend(data["recent"], 1)
-    if trend:
-        retval["1hour"] = trend
-        retval["1hour"]["status"] = status.get_status("1hour", retval["1hour"]["num"])
+    for key, hours, tolerance_seconds in trend_periods:
+        target_timestamp = current_timestamp - hours * 3600 * 1_000_000
+        baseline = db.get_item_near_reading_time(
+            table,
+            target_timestamp,
+            tolerance_seconds,
+        )
+        if baseline is None:
+            continue
 
-    trend = trends.get_hourly_trend(data["recent"], 3)
-    if trend:
-        retval["3hour"] = trend
-        retval["3hour"]["status"] = status.get_status("3hour", retval["3hour"]["num"])
+        trend = trends.get_trend(current, baseline)
+        trend["status"] = status.get_status(key, trend["num"])
+        retval[key] = trend
 
-    if len(data["recent"]) > 140:
-        #
-        # If we already have 24 hours (or close enough to it), just 
-        # grab the very last item.
-        #
-        tmp = data["recent"][-1]
-    else:
-        #
-        # If we don't have 24 hours worth of data, fetch that row explicitly.
-        #
-        tmp = db.get_item_24hours_ago(table, dates["yesterday"], dates["hour_yesterday"])
-
-    if len(tmp):
-        hours_ago_24 = db.convert_decimals_to_ints(tmp)
-
-        retval["24hour"] = {}
-        retval["24hour"]["num"] = (data["current"]["customers_outages"] 
-            - hours_ago_24["customers_outages"])
-
-        if retval["24hour"]["num"] > 0:
-            retval["24hour"]["direction"] = "up"
-        else:
-            retval["24hour"]["direction"] = "down"
-
-        retval["24hour"]["status"] = status.get_status("24hour", retval["24hour"]["num"])
-
-    return(retval)
+    return retval
 
 
-#
-# Sanitize our rows, removing old style rows.
-# 
 def _sanitize_rows(items):
 
     retval = []
@@ -211,21 +145,4 @@ def _sanitize_rows(items):
 
         retval.append(row)
 
-    #print("DEBUG", len(retval), retval)
-
     return(retval)
-
-
-#
-# Get the live status from PECO
-#
-def get_status_live(event, context):
-
-    stats, _ = peco.get_stats()
-
-    #print("DEBUG", stats) # Debugging
-    response = {"statusCode": 200, "body": json.dumps(stats, indent = 4)}
-
-    return(response)
-
-
