@@ -129,6 +129,12 @@ Additionally, the container contains a copy of `bin/cron.sh` which is run in the
 - Backs up the database to S3, every 5 minutes
 
 The reason for the frequent backups is so that if the container is killed and a new one is started, it will pull down the latest backup and no outage data will be missed.
+After a backup uploads successfully, older backups are pruned so that only the
+final backup from each previous UTC day is retained. Only the 10 most recent
+backups from the current UTC day are kept; change `BACKUPS_TO_KEEP_TODAY` near
+the top of `bin/backup-db.sh` to adjust this limit.
+Run `./bin/backup-db.sh --dry-run` to print the planned backup and pruning
+actions without compressing, uploading, or deleting files.
 
 ### Reverse proxy client IPs
 
