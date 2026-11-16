@@ -1,7 +1,7 @@
 FROM python:3.14-slim
 
 RUN apt-get update \
-    && apt-get install --no-install-recommends --yes awscli less \
+    && apt-get install --no-install-recommends --yes awscli less procps \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=ghcr.io/astral-sh/uv:0.12.17 /uv /uvx /bin/
