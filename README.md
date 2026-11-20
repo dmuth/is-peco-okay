@@ -50,7 +50,8 @@ column and assigns an auto-incrementing `id`. Main status records also store
 PECO's reading time in an indexed `reading_timestamp` column. History windows
 and trend baselines use that reading time. The purge command retains main status
 records for eight days (providing headroom for a seven-day view) and raw archive
-records for 365 days.
+records for 365 days. Configure these periods with `PECO_DB_MAIN_DAYS`
+(default 8) and `PECO_DB_ARCHIVE_DAYS` (default 365).
 The database schema is created on first run and is not upgraded in place; when
 changing the schema before deployment, start with a fresh database.
 

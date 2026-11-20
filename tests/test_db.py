@@ -1,3 +1,4 @@
+import importlib
 import json
 import os
 from contextlib import closing
@@ -23,6 +24,25 @@ class DatabaseConfigurationTests(unittest.TestCase):
                 RuntimeError, "SQLITE_DATABASE_PATH must be set"
             ):
                 db.get_table("main")
+
+    def test_retention_periods_use_environment_values_and_defaults(self) -> None:
+        try:
+            with patch.dict(os.environ):
+                os.environ.pop("PECO_DB_MAIN_DAYS", None)
+                os.environ.pop("PECO_DB_ARCHIVE_DAYS", None)
+                importlib.reload(db)
+                self.assertEqual(db.PECO_DB_MAIN_DAYS, 8)
+                self.assertEqual(db.PECO_DB_ARCHIVE_DAYS, 365)
+
+            with patch.dict(
+                os.environ,
+                {"PECO_DB_MAIN_DAYS": "3", "PECO_DB_ARCHIVE_DAYS": "90"},
+            ):
+                importlib.reload(db)
+                self.assertEqual(db.PECO_DB_MAIN_DAYS, 3)
+                self.assertEqual(db.PECO_DB_ARCHIVE_DAYS, 90)
+        finally:
+            importlib.reload(db)
 
 
 class DatabaseSchemaTests(unittest.TestCase):

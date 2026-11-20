@@ -14,8 +14,8 @@ import pytz
 
 
 TableName = Literal["main", "archive"]
-MAIN_RETENTION_DAYS = 8
-ARCHIVE_RETENTION_DAYS = 365
+PECO_DB_MAIN_DAYS = int(os.environ.get("PECO_DB_MAIN_DAYS", "8"))
+PECO_DB_ARCHIVE_DAYS = int(os.environ.get("PECO_DB_ARCHIVE_DAYS", "365"))
 _MICROSECONDS_PER_SECOND = 1_000_000
 _UTC_EPOCH = datetime(1970, 1, 1, tzinfo=pytz.utc)
 
@@ -126,10 +126,10 @@ def _connection(table: SQLiteTable) -> Generator[sqlite3.Connection, None, None]
 
 
 def purge_expired_records() -> int:
-    """Purge eight-day status history and one-year raw archive records."""
+    """Purge records according to the configured retention periods."""
     now = datetime.now(pytz.utc)
-    main_expiration = now - timedelta(days=MAIN_RETENTION_DAYS)
-    archive_expiration = now - timedelta(days=ARCHIVE_RETENTION_DAYS)
+    main_expiration = now - timedelta(days=PECO_DB_MAIN_DAYS)
+    archive_expiration = now - timedelta(days=PECO_DB_ARCHIVE_DAYS)
     main_expiration_us = parse_timestamp_microseconds(main_expiration.isoformat())
 
     table = get_table("main")

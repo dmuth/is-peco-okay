@@ -36,3 +36,9 @@ SQLITE_DATABASE_PATH = "db.sqlite"
 # Deployment is behind a reverse proxy, so trust the headers from it.
 #
 TRUST_PROXY=1
+
+# 
+# Retention for database tables, in days
+#
+PECO_DB_MAIN_DAYS=31
+PECO_DB_ARCHIVE_DAYS=365
