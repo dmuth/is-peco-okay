@@ -3,6 +3,7 @@ import json
 import os
 from contextlib import closing
 from datetime import datetime, timedelta
+from decimal import Decimal
 from pathlib import Path
 import sqlite3
 import tempfile
@@ -112,6 +113,50 @@ class DatabaseSchemaTests(unittest.TestCase):
                     ).fetchall(),
                     [(1,), (2,)],
                 )
+
+    def test_decimal_conversion_uses_integral_value_not_exponent(self) -> None:
+        table = db.get_table("archive")
+        db.put_item(
+            table,
+            {
+                "scientific": Decimal("1E+3"),
+                "scaled_integral": Decimal("1.0"),
+                "fractional": Decimal("1.25"),
+            },
+            "2026-11-04 12:00:00",
+        )
+
+        with closing(sqlite3.connect(self.database_path)) as connection, connection:
+            serialized = json.loads(
+                connection.execute("SELECT data FROM archive_records").fetchone()[0]
+            )
+
+        self.assertIs(type(serialized["scientific"]), int)
+        self.assertIs(type(serialized["scaled_integral"]), int)
+        self.assertIs(type(serialized["fractional"]), float)
+        self.assertEqual(
+            serialized,
+            {
+                "scientific": 1000,
+                "scaled_integral": 1,
+                "fractional": 1.25,
+            },
+        )
+
+        converted = db.convert_decimals_to_ints(
+            {
+                "scientific": Decimal("1E+3"),
+                "scaled_integral": Decimal("1.0"),
+                "fractional": Decimal("1.25"),
+            }
+        )
+        self.assertIs(type(converted["scientific"]), int)
+        self.assertIs(type(converted["scaled_integral"]), int)
+        self.assertIs(type(converted["fractional"]), float)
+        self.assertEqual(
+            converted,
+            {"scientific": 1000, "scaled_integral": 1, "fractional": 1.25},
+        )
 
     def test_latest_item_uses_collection_timestamp(self) -> None:
         table = db.get_table("main")

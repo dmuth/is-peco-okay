@@ -209,17 +209,19 @@ def get_dates() -> dict[str, str]:
     }
 
 
+def _decimal_to_json_number(value: Decimal) -> int | float:
+    """Convert integral Decimal values to ints and fractional values to floats."""
+
+    if value.is_finite() and value == value.to_integral_value():
+        return int(value)
+    return float(value)
+
+
 def _json_default(value: object) -> int | float:
     """Convert Decimal values or reject unsupported JSON value types."""
 
-    #
-    # Preserve fractional values as floats and integral Decimal values as ints
-    # so serialized payloads retain a JSON-native numeric representation.
-    #
     if isinstance(value, Decimal):
-        if value.as_tuple().exponent:
-            return float(value)
-        return int(value)
+        return _decimal_to_json_number(value)
     raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
 
 
@@ -373,14 +375,11 @@ def convert_decimals_to_ints(data: dict) -> dict:
     """
 
     #
-    # Fractional decimals need floating-point representation; decimals whose
-    # exponent indicates an integral value are converted to ints for consistency.
+    # Choose the JSON-native number type based on the Decimal's value, not its
+    # exponent, so integral values written in scientific notation remain ints.
     #
     for key, value in data.items():
         if isinstance(value, Decimal):
-            if value.as_tuple().exponent:
-                data[key] = float(value)
-            else:
-                data[key] = int(value)
+            data[key] = _decimal_to_json_number(value)
 
     return data
