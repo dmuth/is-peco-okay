@@ -12,10 +12,24 @@ pushd $(dirname $0)/.. > /dev/null
 # Load environment variables and make them exportable
 if test "${UV_PROJECT_ENVIRONMENT}" != "/app/.venv"
 then
+
+    if test "${PECO_BACKUPS_S3_PREFIX}" 
+    then
+        PECO_BACKUPS_S3_PREFIX_SAVE=${PECO_BACKUPS_S3_PREFIX}
+    fi
+
     echo "# Local environment detected, loading env file"
     set -a
     source ./env
     set +a
+
+    if test "${PECO_BACKUPS_S3_PREFIX_SAVE}"
+    then
+        echo "# "
+        echo "# Variable PECO_BACKUPS_S3_PREFIX was previously set to ${PECO_BACKUPS_S3_PREFIX_SAVE}, using that..."
+        echo "# "
+        PECO_BACKUPS_S3_PREFIX=${PECO_BACKUPS_S3_PREFIX_SAVE}
+    fi
 fi
 
 function now_ms() {

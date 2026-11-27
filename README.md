@@ -37,6 +37,15 @@ uv run python -m unittest discover -s tests -v
 ### Actual Development
 
 ``` bash
+# Set up our Env
+cp env.sample env
+vim env
+
+#
+# Optionally restore the database if you were working on it before
+#
+PECO_BACKUPS_S3_PREFIX=s3://dmuth-peco/prod ./bin/restore-db.sh 
+
 # Build the website, then run FastAPI.  The site and API share port 8000.
 ./bin/build-site.sh && ./bin/app-run.sh
 
