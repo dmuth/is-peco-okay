@@ -6,6 +6,17 @@ View on the web at [https://www.IsPecoOkay.com/](https://www.ispecookay.com/).
 
 ## Development
 
+### Prerequisites
+
+Make sure Hugo and Sass are installed:
+
+``` bash
+brew tap dart-lang/dart
+brew trust dart-lang/dart
+brew install sass/sass/sass
+brew install hugo
+```
+
 ### Setup
 
 The default development interpreter is Python 3.14, selected by `.python-version`.
@@ -26,7 +37,6 @@ uv run python -m unittest discover -s tests -v
 ### Actual Development
 
 ``` bash
-
 # Build the website, then run FastAPI.  The site and API share port 8000.
 ./bin/build-site.sh && ./bin/app-run.sh
 
